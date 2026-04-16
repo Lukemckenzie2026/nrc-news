@@ -103,7 +103,7 @@ def rank_with_claude(client, all_headlines):
     headline_list = [{"title": a["title"], "url": a["url"], "source": a["source"]} for a in all_headlines]
 
     msg = client.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-5",
         max_tokens=3000,
         messages=[{
             "role": "user",
