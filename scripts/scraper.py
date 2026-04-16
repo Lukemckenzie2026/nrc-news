@@ -1,15 +1,9 @@
 """
 NRC Market Intelligence Scraper
 - Scrapes 11 CRE sources
-- Claude AI filters for NRC relevance
-- Claude extracts structured market data from each article
-- Saves full article text as a real PDF in docs/pdfs/
-- Generates self-contained docs/index.html dashboard
-
-Usage:
-    python scripts/scraper.py
-
-Or trigger via the Rerun button (requires server.py running).
+- Fetches and stores FULL article text (not just headlines)
+- Claude reads the full text to filter relevance and extract data
+- Generates dashboard with inline article reader (no PDF)
 """
 
 import json, os, re, time, hashlib, requests
@@ -19,7 +13,7 @@ from bs4 import BeautifulSoup
 import anthropic
 
 # ─────────────────────────────────────────────────────────────────
-# SOURCES — add/remove freely
+# SOURCES
 # ─────────────────────────────────────────────────────────────────
 SOURCES = [
     {"name": "Bisnow Boston",           "url": "https://www.bisnow.com",        "section_url": "https://www.bisnow.com/boston"},
@@ -36,7 +30,7 @@ SOURCES = [
 ]
 
 # ─────────────────────────────────────────────────────────────────
-# PROMPTS — edit freely, plain English
+# PROMPTS
 # ─────────────────────────────────────────────────────────────────
 RELEVANCE_PROMPT = """
 You are a research analyst at North River Company (NRC), a real estate private equity firm in Boston.
@@ -46,7 +40,8 @@ NRC's focus:
 - Asset classes: industrial, life science, Class B office, cold storage, tower residential (100+ units)
 - Strategy: acquisitions, asset management, value-add, opportunistic, core/core-plus
 
-Given a list of article headlines, return ONLY the ones relevant to NRC as a JSON array.
+You will be given a list of articles, each with a title AND the full article text.
+Return ONLY the ones relevant to NRC as a JSON array.
 Each item: { "title": string, "url": string, "source": string }
 Return ONLY valid JSON. No markdown, no commentary.
 """
@@ -54,12 +49,15 @@ Return ONLY valid JSON. No markdown, no commentary.
 EXTRACTION_PROMPT = """
 You are a real estate research analyst at North River Company (NRC).
 
-Read the article and extract any market data present.
+Read the full article text below and:
+1. Extract all market data present
+2. Write a thorough summary based on the actual article content (not just the headline)
+
 Return a JSON object with these exact keys (null if not mentioned):
 
 {
-  "summary": "2-3 sentence summary of what this means for NRC",
-  "relevance_reason": "One sentence: why relevant to NRC specifically",
+  "summary": "3-4 sentence summary based on the full article content, including specific facts, figures, and quotes from the article",
+  "relevance_reason": "One sentence: why this is specifically relevant to NRC",
   "market": "Market(s) covered e.g. Boston, Pittsburgh, National",
   "asset_class": "Asset class(es) e.g. Industrial, Life Science, Office",
   "vacancy_rate": "e.g. '12.4%' or null",
@@ -75,14 +73,15 @@ Return a JSON object with these exact keys (null if not mentioned):
 
 Return ONLY valid JSON. No markdown, no commentary.
 
-Article:
+Article title: {title}
+Article text:
+{text}
 """
 
 HEADERS      = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
 ROOT         = Path(__file__).parent.parent
 OUTPUT_FILE  = ROOT / "docs" / "index.html"
 ARCHIVE_FILE = ROOT / "docs" / "data" / "archive.json"
-PDF_DIR      = ROOT / "docs" / "pdfs"
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -112,154 +111,78 @@ def scrape_headlines(source):
 
 
 def fetch_article_text(url):
-    """Returns (short_text_for_claude, full_text_for_pdf)."""
+    """Fetch and clean the full article body text."""
     try:
         r = requests.get(url, headers=HEADERS, timeout=15)
         soup = BeautifulSoup(r.text, "html.parser")
-        # grab title from page
-        page_title = soup.title.get_text(strip=True) if soup.title else ""
-        for tag in soup(["nav","footer","aside","script","style","form","header","iframe"]): tag.decompose()
-        for sel in ["article",".article-body",".story-body",".post-content",".entry-content","main"]:
+        for tag in soup(["nav","footer","aside","script","style","form","header","iframe",
+                         ".ad","#ad",".advertisement",".subscribe-wall",".paywall"]): 
+            tag.decompose()
+        # Try common article body selectors in order of preference
+        for sel in ["article", ".article-body", ".article__body", ".story-body",
+                    ".post-content", ".entry-content", ".article-content",
+                    "[itemprop='articleBody']", ".body-copy", "main"]:
             el = soup.select_one(sel)
             if el:
-                full = el.get_text(separator="\n", strip=True)
-                return full[:6000], full, page_title
-        full = soup.get_text(separator="\n", strip=True)
-        return full[:6000], full, page_title
-    except Exception:
-        return "", "", ""
+                text = el.get_text(separator="\n", strip=True)
+                # Clean up excessive whitespace
+                text = re.sub(r'\n{3,}', '\n\n', text)
+                if len(text) > 200:  # make sure we got real content
+                    return text
+        # Fallback to full page
+        text = soup.get_text(separator="\n", strip=True)
+        return re.sub(r'\n{3,}', '\n\n', text)
+    except Exception as e:
+        return ""
 
 
 # ─────────────────────────────────────────────────────────────────
 # CLAUDE AI
 # ─────────────────────────────────────────────────────────────────
-def filter_with_claude(client, all_headlines):
+def filter_with_claude(client, articles_with_text):
+    """Filter using both headline AND article text for better accuracy."""
+    # Build input with title + first 500 chars of text per article
+    article_list = []
+    for a in articles_with_text:
+        preview = (a.get("body","") or "")[:500].replace("\n"," ").strip()
+        article_list.append({
+            "title": a["title"],
+            "url": a["url"],
+            "source": a["source"],
+            "preview": preview
+        })
+
     msg = client.messages.create(
         model="claude-sonnet-4-20250514", max_tokens=4000,
-        messages=[{"role":"user","content":f"{RELEVANCE_PROMPT}\n\nHeadlines:\n{json.dumps(all_headlines,indent=2)}"}]
+        messages=[{"role":"user","content":f"{RELEVANCE_PROMPT}\n\nArticles:\n{json.dumps(article_list,indent=2)}"}]
     )
     raw = re.sub(r"^```json|^```|```$","",msg.content[0].text.strip(),flags=re.MULTILINE).strip()
     filtered = json.loads(raw)
-    print(f"\n  Claude selected {len(filtered)} relevant from {len(all_headlines)}")
+    print(f"\n  Claude selected {len(filtered)} relevant from {len(articles_with_text)}")
     return filtered
 
 
-def extract_market_data(client, article, text):
-    if not text.strip():
+def extract_market_data(client, article):
+    """Extract structured data from the full article text."""
+    body = (article.get("body") or "").strip()
+    if not body:
         return {k: None for k in ["summary","relevance_reason","market","asset_class",
                                    "vacancy_rate","cap_rate","asking_rent","transaction",
                                    "absorption","debt_terms","pipeline","tenant","sentiment"]}
     try:
+        # Use up to 8000 chars of the article
+        text_for_claude = body[:8000]
+        prompt = EXTRACTION_PROMPT.replace("{title}", article["title"]).replace("{text}", text_for_claude)
+
         msg = client.messages.create(
-            model="claude-sonnet-4-20250514", max_tokens=1000,
-            messages=[{"role":"user","content":f"{EXTRACTION_PROMPT}\nTitle: {article['title']}\n\n{text}"}]
+            model="claude-sonnet-4-20250514", max_tokens=1200,
+            messages=[{"role":"user","content": prompt}]
         )
         raw = re.sub(r"^```json|^```|```$","",msg.content[0].text.strip(),flags=re.MULTILINE).strip()
         return json.loads(raw)
     except Exception as e:
         print(f"    Extraction error: {e}")
         return {}
-
-
-# ─────────────────────────────────────────────────────────────────
-# PDF GENERATION
-# ─────────────────────────────────────────────────────────────────
-PDF_CSS = """
-@page { margin: 2.2cm 2.4cm; size: letter; }
-body { font-family: Georgia, serif; font-size: 11pt; color: #111; line-height: 1.65; }
-.nrc-header { border-bottom: 2.5pt solid #0d1c2e; padding-bottom: 10pt; margin-bottom: 18pt; display: flex; justify-content: space-between; align-items: flex-end; }
-.nrc-logo { font-family: Arial, sans-serif; font-size: 13pt; font-weight: bold; color: #0d1c2e; letter-spacing: 0.5pt; }
-.nrc-sub { font-family: Arial, sans-serif; font-size: 7pt; color: #4a8fd4; text-transform: uppercase; letter-spacing: 1.5pt; margin-top: 2pt; }
-.nrc-date { font-family: 'Courier New', monospace; font-size: 8pt; color: #8492a8; }
-h1 { font-size: 18pt; font-weight: bold; color: #0d1c2e; line-height: 1.25; margin: 0 0 8pt 0; }
-.source-line { font-family: Arial, sans-serif; font-size: 8pt; color: #4a8fd4; text-transform: uppercase; letter-spacing: 1pt; margin-bottom: 14pt; }
-.ai-block { background: #f5f7fa; border-left: 3pt solid #0d1c2e; padding: 10pt 12pt; margin: 14pt 0; }
-.ai-label { font-family: Arial, sans-serif; font-size: 7pt; text-transform: uppercase; letter-spacing: 1.5pt; color: #8492a8; margin-bottom: 5pt; }
-.ai-summary { font-size: 10.5pt; color: #1a1a2e; line-height: 1.6; margin-bottom: 6pt; }
-.ai-relevance { font-size: 9.5pt; color: #b8924a; font-style: italic; }
-.data-table { width: 100%; border-collapse: collapse; margin: 14pt 0; font-family: Arial, sans-serif; font-size: 9pt; }
-.data-table td { padding: 5pt 8pt; border-bottom: 0.5pt solid #eaecf2; }
-.data-table td:first-child { color: #8492a8; text-transform: uppercase; letter-spacing: 0.5pt; font-size: 7.5pt; width: 28%; }
-.data-table td:last-child { font-weight: bold; color: #0d1c2e; font-family: 'Courier New', monospace; font-size: 10pt; }
-.divider { border: none; border-top: 0.5pt solid #eaecf2; margin: 14pt 0; }
-.article-body { font-size: 10.5pt; line-height: 1.7; color: #222; white-space: pre-wrap; }
-.url-line { font-family: 'Courier New', monospace; font-size: 8pt; color: #8492a8; word-break: break-all; margin-top: 14pt; padding-top: 10pt; border-top: 0.5pt solid #eaecf2; }
-.footer { font-family: Arial, sans-serif; font-size: 7pt; color: #c0c8d8; margin-top: 20pt; text-align: center; }
-"""
-
-def make_data_rows(a):
-    fields = [
-        ("Vacancy Rate", a.get("vacancy_rate")),
-        ("Cap Rate",     a.get("cap_rate")),
-        ("Asking Rent",  a.get("asking_rent")),
-        ("Transaction",  a.get("transaction")),
-        ("Absorption",   a.get("absorption")),
-        ("Debt / Rate",  a.get("debt_terms")),
-        ("Pipeline",     a.get("pipeline")),
-        ("Tenant",       a.get("tenant")),
-    ]
-    rows = "".join(f"<tr><td>{label}</td><td>{val}</td></tr>" for label, val in fields if val)
-    return f'<table class="data-table">{rows}</table>' if rows else ""
-
-
-def generate_pdf(article, full_text):
-    """Generate a real PDF from article content. Returns filename or None."""
-    try:
-        from weasyprint import HTML, CSS
-
-        today = datetime.now().strftime("%B %d, %Y")
-        art_id = article.get("id", hashlib.md5(article["url"].encode()).hexdigest()[:10])
-        filename = f"{article.get('date','today')}_{art_id}.pdf"
-        pdf_path = PDF_DIR / filename
-
-        # Truncate body for PDF (keep first ~8000 chars of full text)
-        body_text = (full_text or "")[:8000]
-        if len(full_text or "") > 8000:
-            body_text += "\n\n[Article truncated — visit source for full text]"
-
-        # Escape HTML special chars in body text
-        import html as htmllib
-        body_escaped = htmllib.escape(body_text)
-
-        html_content = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-<style>{PDF_CSS}</style></head><body>
-<div class="nrc-header">
-  <div>
-    <div class="nrc-logo">North River Company</div>
-    <div class="nrc-sub">Market Intelligence</div>
-  </div>
-  <div class="nrc-date">{today}</div>
-</div>
-
-<div class="source-line">{article['source']}</div>
-<h1>{htmllib.escape(article['title'])}</h1>
-
-<div class="ai-block">
-  <div class="ai-label">AI Summary</div>
-  <div class="ai-summary">{htmllib.escape(article.get('summary') or '')}</div>
-  <div class="ai-relevance">NRC Relevance: {htmllib.escape(article.get('relevance_reason') or '')}</div>
-</div>
-
-{make_data_rows(article)}
-
-<hr class="divider">
-
-<div class="article-body">{body_escaped}</div>
-
-<div class="url-line">Source: {htmllib.escape(article['url'])}</div>
-<div class="footer">Generated by NRC Market Intelligence · North River Company</div>
-</body></html>"""
-
-        HTML(string=html_content).write_pdf(
-            str(pdf_path),
-            stylesheets=[CSS(string=PDF_CSS)]
-        )
-        print(f"    ✓ PDF: {filename}")
-        return filename
-
-    except Exception as e:
-        print(f"    ✗ PDF failed: {e}")
-        return None
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -276,7 +199,7 @@ def save_archive(articles):
 
 
 # ─────────────────────────────────────────────────────────────────
-# HTML DASHBOARD GENERATION
+# HTML DASHBOARD
 # ─────────────────────────────────────────────────────────────────
 def sc(s): return {"bullish":"#1e6e4a","bearish":"#b53325","neutral":"#2660a4"}.get(s or "neutral","#2660a4")
 def sb(s): return {"bullish":"rgba(30,110,74,0.08)","bearish":"rgba(181,51,37,0.08)","neutral":"rgba(38,96,164,0.08)"}.get(s or "neutral","rgba(38,96,164,0.08)")
@@ -285,11 +208,27 @@ def chip(label, val):
     if not val: return ""
     return f'<span class="dchip"><span class="dchip-k">{label}</span><span class="dchip-v">{val}</span></span>'
 
+def escape_js_string(s):
+    """Escape text for embedding in a JS string."""
+    if not s: return ""
+    return (s.replace("\\","\\\\")
+             .replace("'","\\'")
+             .replace("\n","\\n")
+             .replace("\r","")
+             .replace("</","<\\/"))
+
+def escape_html(s):
+    if not s: return ""
+    return (s.replace("&","&amp;")
+             .replace("<","&lt;")
+             .replace(">","&gt;")
+             .replace('"',"&quot;"))
+
 def article_card(a, is_today=True):
-    sent     = a.get("sentiment") or "neutral"
-    art_id   = a.get("id","x")
-    pdf_file = a.get("pdf_filename")
-    date_badge = '<span class="badge-today">TODAY</span>' if is_today else f'<span class="badge-date">{a.get("date","")}</span>'
+    sent   = a.get("sentiment") or "neutral"
+    art_id = a.get("id","x")
+    body   = a.get("body","") or ""
+    has_body = len(body.strip()) > 100
 
     chips = "".join([
         chip("Vacancy",   a.get("vacancy_rate")),
@@ -304,9 +243,15 @@ def article_card(a, is_today=True):
     has_data = any(a.get(k) for k in ["vacancy_rate","cap_rate","asking_rent","transaction",
                                        "absorption","debt_terms","pipeline","tenant"])
 
-    pdf_btn = (f'<a href="pdfs/{pdf_file}" download class="btn-sm btn-pdf">↓ PDF</a>'
-               if pdf_file else
-               '<span class="btn-sm btn-disabled" title="PDF unavailable (paywalled or no content)">↓ PDF</span>')
+    date_badge = '<span class="badge-today">TODAY</span>' if is_today else f'<span class="badge-date">{a.get("date","")}</span>'
+
+    read_btn = (f'<button class="btn-sm btn-read-full" onclick="openReader(\'{art_id}\')">Read Article</button>'
+                if has_body else
+                f'<a href="{a["url"]}" target="_blank" class="btn-sm btn-read-full">Read Article ↗</a>')
+
+    # Embed body text as escaped JS for the reader modal
+    body_escaped = escape_js_string(body[:12000])
+    body_html_escaped = escape_html(body[:12000])
 
     return f"""<article class="acard" data-sentiment="{sent}" id="card-{art_id}">
   <div class="acard-body">
@@ -315,18 +260,27 @@ def article_card(a, is_today=True):
       {date_badge}
       <span class="sent-pill" style="color:{sc(sent)};background:{sb(sent)}">{sent.upper()}</span>
       <div class="acard-actions">
-        <a href="{a['url']}" target="_blank" class="btn-sm btn-read">Read ↗</a>
-        {pdf_btn}
+        <a href="{a['url']}" target="_blank" class="btn-sm btn-outline">Source ↗</a>
+        {read_btn}
       </div>
     </div>
-    <a class="acard-title" href="{a['url']}" target="_blank">{a['title']}</a>
-    {f'<p class="acard-summary">{a["summary"]}</p>' if a.get("summary") else ""}
-    {f'<p class="acard-relevance">{a["relevance_reason"]}</p>' if a.get("relevance_reason") else ""}
+    <a class="acard-title" href="{a['url']}" target="_blank">{escape_html(a['title'])}</a>
+    {f'<p class="acard-summary">{escape_html(a.get("summary",""))}</p>' if a.get("summary") else ""}
+    {f'<p class="acard-relevance">{escape_html(a.get("relevance_reason",""))}</p>' if a.get("relevance_reason") else ""}
     {f'<div class="chips-row">{chips}</div>' if has_data else ""}
   </div>
   <div class="acard-tags">
-    {'<span class="tag-market">'+a["market"]+'</span>' if a.get("market") else ""}
-    {'<span class="tag-asset">'+a["asset_class"]+'</span>' if a.get("asset_class") else ""}
+    {'<span class="tag-market">'+escape_html(a.get("market",""))+'</span>' if a.get("market") else ""}
+    {'<span class="tag-asset">'+escape_html(a.get("asset_class",""))+'</span>' if a.get("asset_class") else ""}
+  </div>
+  <div class="reader-data" id="reader-{art_id}" style="display:none"
+       data-title="{escape_html(a['title'])}"
+       data-source="{escape_html(a['source'])}"
+       data-date="{a.get('date','')}"
+       data-url="{a['url']}"
+       data-body="{body_escaped}"
+       data-summary="{escape_js_string(a.get('summary',''))}"
+       data-relevance="{escape_js_string(a.get('relevance_reason',''))}">
   </div>
 </article>"""
 
@@ -343,8 +297,8 @@ def snapshot_panel(articles):
         if not hits: continue
         items = "".join(
             f'<div class="snap-item"><a href="{u}" target="_blank" class="snap-hed">'
-            f'{t[:80]}{"…" if len(t)>80 else ""}</a>'
-            f'<span class="snap-val">{v}</span>'
+            f'{escape_html(t[:80])}{"…" if len(t)>80 else ""}</a>'
+            f'<span class="snap-val">{escape_html(v)}</span>'
             f'<span class="snap-src">{s}</span></div>'
             for t,v,s,u in hits
         )
@@ -355,15 +309,14 @@ def snapshot_panel(articles):
 def archive_rows_html(archive):
     return "".join(f"""<tr>
       <td class="td-mono">{a.get("date","")}</td>
-      <td class="td-src">{a["source"]}</td>
-      <td><a href="{a["url"]}" target="_blank" class="arc-link">{a["title"]}</a></td>
-      <td>{a.get("market") or "—"}</td>
-      <td>{a.get("asset_class") or "—"}</td>
-      <td class="td-num">{a.get("vacancy_rate") or "—"}</td>
-      <td class="td-num">{a.get("cap_rate") or "—"}</td>
-      <td class="td-num">{a.get("asking_rent") or "—"}</td>
-      <td class="td-num">{a.get("transaction") or "—"}</td>
-      <td>{'<a href="pdfs/'+a["pdf_filename"]+'" download class="arc-pdf">↓ PDF</a>' if a.get("pdf_filename") else "—"}</td>
+      <td class="td-src">{escape_html(a["source"])}</td>
+      <td><a href="{a['url']}" target="_blank" class="arc-link">{escape_html(a["title"])}</a></td>
+      <td>{escape_html(a.get("market") or "—")}</td>
+      <td>{escape_html(a.get("asset_class") or "—")}</td>
+      <td class="td-num">{escape_html(a.get("vacancy_rate") or "—")}</td>
+      <td class="td-num">{escape_html(a.get("cap_rate") or "—")}</td>
+      <td class="td-num">{escape_html(a.get("asking_rent") or "—")}</td>
+      <td class="td-num">{escape_html(a.get("transaction") or "—")}</td>
       <td><span class="sent-pill" style="color:{sc(a.get('sentiment'))};background:{sb(a.get('sentiment'))}">{(a.get("sentiment") or "—").upper()}</span></td>
     </tr>""" for a in archive)
 
@@ -410,8 +363,7 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 .tb-nav button{{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);border-radius:4px;padding:5px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}}
 .tb-nav button:hover,.tb-nav button.on{{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);}}
 .rerun-btn{{background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:5px 16px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;white-space:nowrap;}}
-.rerun-btn:hover{{opacity:.88;}}
-.rerun-btn:disabled{{opacity:.5;cursor:wait;}}
+.rerun-btn:hover{{opacity:.88;}}.rerun-btn:disabled{{opacity:.5;cursor:wait;}}
 
 /* PROGRESS */
 .prog-wrap{{height:2px;background:rgba(255,255,255,0.06);overflow:hidden;display:none;}}
@@ -419,7 +371,7 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 .prog-fill{{height:100%;width:0%;background:var(--gold);transition:width .5s ease;}}
 
 /* TOAST */
-.toast{{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--navy);color:#fff;border-radius:var(--r);padding:12px 20px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;border-left:3px solid var(--gold);max-width:360px;line-height:1.5;}}
+.toast{{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--navy);color:#fff;border-radius:var(--r);padding:12px 20px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;border-left:3px solid var(--gold);max-width:360px;line-height:1.5;}}
 .toast.show{{opacity:1;transform:translateY(0);}}
 
 /* HERO */
@@ -436,16 +388,15 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 .wrap{{max-width:1200px;margin:0 auto;padding:24px 28px;}}
 .tab-pane{{display:none;}}.tab-pane.on{{display:block;}}
 
-/* FILTER ROW */
+/* FILTERS */
 .frow{{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}}
 .flabel{{font-size:10px;font-family:'DM Mono',monospace;color:var(--g4);text-transform:uppercase;letter-spacing:1.5px;}}
 .fchip{{border:1px solid var(--g2);background:var(--w);border-radius:20px;padding:4px 13px;font-size:12px;cursor:pointer;color:var(--g6);transition:all .15s;}}
-.fchip:hover{{border-color:var(--blue);color:var(--blue);}}
-.fchip.on{{background:var(--navy);border-color:var(--navy);color:#fff;}}
+.fchip:hover{{border-color:var(--blue);color:var(--blue);}}.fchip.on{{background:var(--navy);border-color:var(--navy);color:#fff;}}
 .fsearch{{border:1px solid var(--g2);border-radius:20px;padding:4px 14px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;width:200px;margin-left:auto;transition:border-color .2s;}}
 .fsearch:focus{{border-color:var(--blue);}}
 
-/* ARTICLE CARDS */
+/* CARDS */
 .cards{{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}}
 .acard{{background:var(--w);border:1px solid var(--g2);border-radius:var(--r);transition:all .2s;animation:fu .25s ease both;overflow:hidden;}}
 .acard:hover{{border-color:var(--bluel);box-shadow:0 2px 12px rgba(13,28,46,0.07);}}
@@ -459,11 +410,9 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 .sent-pill{{font-size:9px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:.5px;font-weight:500;}}
 .acard-actions{{margin-left:auto;display:flex;gap:6px;align-items:center;}}
 
-/* BUTTONS */
 .btn-sm{{font-size:11px;padding:4px 11px;border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none;display:inline-block;white-space:nowrap;border:1px solid transparent;font-weight:500;}}
-.btn-read{{border-color:var(--g2);color:var(--g6);background:transparent;}}.btn-read:hover{{border-color:var(--blue);color:var(--blue);background:var(--bluep);}}
-.btn-pdf{{border-color:var(--gold);color:var(--gold);background:var(--goldp);}}.btn-pdf:hover{{background:var(--gold);color:var(--navy);}}
-.btn-disabled{{border-color:var(--g1);color:var(--g4);background:var(--off);cursor:not-allowed;opacity:.6;}}
+.btn-outline{{border-color:var(--g2);color:var(--g6);background:transparent;}}.btn-outline:hover{{border-color:var(--blue);color:var(--blue);background:var(--bluep);}}
+.btn-read-full{{border-color:var(--navy);color:var(--navy);background:transparent;}}.btn-read-full:hover{{background:var(--navy);color:#fff;}}
 
 .acard-title{{display:block;font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--navy);text-decoration:none;line-height:1.3;margin-bottom:6px;transition:color .15s;}}
 .acard-title:hover{{color:var(--blue);}}
@@ -471,7 +420,7 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 .acard-relevance{{font-size:12px;color:var(--gold);border-left:2px solid var(--goldp);padding-left:9px;margin-top:6px;font-style:italic;}}
 
 .chips-row{{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}}
-.dchip{{display:inline-flex;border-radius:3px;overflow:hidden;border:1px solid var(--g2);font-size:11px;}}
+.dchip{{display:inline-flex;border-radius:3px;overflow:hidden;border:1px solid var(--g2);}}
 .dchip-k{{background:var(--navy);color:rgba(255,255,255,0.45);padding:2px 7px;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}}
 .dchip-v{{background:var(--w);color:var(--navy);padding:2px 8px;font-weight:600;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;}}
 
@@ -497,17 +446,61 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 .arc-table th{{text-align:left;padding:9px 14px;font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);border-bottom:2px solid var(--g1);background:var(--off);white-space:nowrap;}}
 .arc-table td{{padding:10px 14px;border-bottom:1px solid var(--g1);vertical-align:middle;}}.arc-table tr:last-child td{{border-bottom:none;}}.arc-table tr:hover td{{background:#f0f5fd;}}
 .arc-link{{color:var(--navy);font-weight:500;text-decoration:none;}}.arc-link:hover{{color:var(--blue);text-decoration:underline;}}
-.arc-pdf{{font-size:11px;color:var(--gold);text-decoration:none;font-weight:600;border:1px solid var(--goldp);padding:2px 8px;border-radius:3px;background:var(--goldp);}}.arc-pdf:hover{{background:var(--gold);color:var(--navy);}}
 .td-mono{{font-family:'DM Mono',monospace;font-size:11px;color:var(--g4);white-space:nowrap;}}
 .td-src{{font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);white-space:nowrap;}}
 .td-num{{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--navy);}}
 
 .empty{{text-align:center;padding:48px;color:var(--g4);font-family:'DM Mono',monospace;font-size:13px;}}
 
-@media(max-width:800px){{.hero-pills{{display:none;}}.wrap{{padding:16px;}}.topbar-inner{{padding:0 16px;}}.hero{{padding:20px 16px;}}}}
+/* READER MODAL */
+.modal-overlay{{position:fixed;inset:0;background:rgba(13,28,46,0.7);z-index:500;display:none;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;backdrop-filter:blur(2px);}}
+.modal-overlay.open{{display:flex;}}
+.modal{{background:var(--w);border-radius:8px;width:100%;max-width:760px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column;max-height:90vh;}}
+.modal-header{{padding:20px 24px 16px;border-bottom:1px solid var(--g1);display:flex;align-items:flex-start;gap:16px;flex-shrink:0;}}
+.modal-header-text{{flex:1;min-width:0;}}
+.modal-source{{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--blue);margin-bottom:6px;}}
+.modal-title{{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);line-height:1.3;}}
+.modal-close{{background:var(--off);border:1px solid var(--g2);border-radius:4px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--g4);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}}
+.modal-close:hover{{background:var(--g1);color:var(--navy);}}
+.modal-ai{{padding:16px 24px;background:var(--off);border-bottom:1px solid var(--g1);flex-shrink:0;}}
+.modal-ai-label{{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);margin-bottom:6px;}}
+.modal-summary{{font-size:13px;color:var(--g6);line-height:1.6;margin-bottom:6px;}}
+.modal-relevance{{font-size:12px;color:var(--gold);font-style:italic;border-left:2px solid var(--goldp);padding-left:8px;}}
+.modal-body{{padding:24px;overflow-y:auto;flex:1;}}
+.modal-body-text{{font-family:Georgia,serif;font-size:15px;line-height:1.8;color:#222;white-space:pre-wrap;word-break:break-word;}}
+.modal-footer{{padding:14px 24px;border-top:1px solid var(--g1);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--off);border-radius:0 0 8px 8px;}}
+.modal-footer a{{font-size:12px;color:var(--blue);text-decoration:none;}}.modal-footer a:hover{{text-decoration:underline;}}
+.modal-paywall-note{{font-size:12px;color:var(--g4);font-style:italic;}}
+
+@media(max-width:800px){{.hero-pills{{display:none;}}.wrap{{padding:16px;}}.topbar-inner{{padding:0 16px;}}.hero{{padding:20px 16px;}}.modal{{margin:0;border-radius:0;max-height:100vh;}}}}
 </style>
 </head>
 <body>
+
+<!-- READER MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeReaderOnBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-header-text">
+        <div class="modal-source" id="modal-source"></div>
+        <div class="modal-title" id="modal-title"></div>
+      </div>
+      <button class="modal-close" onclick="closeReader()">✕</button>
+    </div>
+    <div class="modal-ai" id="modal-ai">
+      <div class="modal-ai-label">NRC Analysis</div>
+      <div class="modal-summary" id="modal-summary"></div>
+      <div class="modal-relevance" id="modal-relevance"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-body-text" id="modal-body-text"></div>
+    </div>
+    <div class="modal-footer">
+      <a href="#" id="modal-source-link" target="_blank">View Original Source ↗</a>
+      <span class="modal-paywall-note" id="modal-paywall-note"></span>
+    </div>
+  </div>
+</div>
 
 <header class="topbar">
   <div class="prog-wrap" id="prog"><div class="prog-fill" id="prog-fill"></div></div>
@@ -540,7 +533,6 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 </div>
 
 <div class="wrap">
-
   <div class="tab-pane on" id="tab-today">
     <div class="frow">
       <span class="flabel">Filter:</span>
@@ -564,24 +556,26 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
       <table class="arc-table">
         <thead><tr>
           <th>Date</th><th>Source</th><th>Headline</th><th>Market</th><th>Asset</th>
-          <th>Vacancy</th><th>Cap Rate</th><th>Rent</th><th>Deal</th><th>PDF</th><th>Sentiment</th>
+          <th>Vacancy</th><th>Cap Rate</th><th>Rent</th><th>Deal</th><th>Sentiment</th>
         </tr></thead>
         <tbody id="arc-tbody">{arc_html}</tbody>
       </table>
     </div>
   </div>
-
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
+// ── TABS ──
 function switchTab(n,btn){{
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tb-nav button').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+n).classList.add('on');
   btn.classList.add('on');
 }}
+
+// ── FILTERS ──
 let activeSent='all';
 function filterSent(s,el){{
   activeSent=s;
@@ -600,17 +594,65 @@ function filterArc(){{
   const q=document.getElementById('search-arc').value.toLowerCase();
   document.querySelectorAll('#arc-tbody tr').forEach(r=>{{r.style.display=!q||r.innerText.toLowerCase().includes(q)?'':'none';}});
 }}
+
+// ── READER MODAL ──
+function openReader(id){{
+  const el=document.getElementById('reader-'+id);
+  if(!el)return;
+  const title=el.dataset.title;
+  const source=el.dataset.source;
+  const date=el.dataset.date;
+  const url=el.dataset.url;
+  const body=el.dataset.body;
+  const summary=el.dataset.summary;
+  const relevance=el.dataset.relevance;
+
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-source').textContent=source+' · '+date;
+  document.getElementById('modal-summary').textContent=summary||'';
+  document.getElementById('modal-relevance').textContent=relevance||'';
+  document.getElementById('modal-source-link').href=url;
+
+  const aiBlock=document.getElementById('modal-ai');
+  aiBlock.style.display=(summary||relevance)?'':'none';
+
+  if(body&&body.trim().length>100){{
+    document.getElementById('modal-body-text').textContent=body;
+    document.getElementById('modal-paywall-note').textContent='';
+  }}else{{
+    document.getElementById('modal-body-text').textContent='Full article text could not be retrieved — this article may be behind a paywall.';
+    document.getElementById('modal-paywall-note').textContent='Visit the original source to read the full article.';
+  }}
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}}
+
+function closeReader(){{
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}}
+
+function closeReaderOnBg(e){{
+  if(e.target===document.getElementById('modal-overlay'))closeReader();
+}}
+
+document.addEventListener('keydown',e=>{{if(e.key==='Escape')closeReader();}});
+
+// ── TOAST ──
 function toast(msg,ms=4000){{
   const el=document.getElementById('toast');
   el.innerHTML=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),ms);
 }}
+
+// ── RERUN ──
 async function rerun(){{
-  const GITHUB_USER='{GITHUB_USER}';
-  const GITHUB_REPO='{GITHUB_REPO}';
+  const GITHUB_USER='Lukemckenzie2026';
+  const GITHUB_REPO='nrc-news';
   const TOKEN='{GITHUB_PAT}';
-  if(!GITHUB_USER||GITHUB_USER==='{GITHUB_USER}'||!TOKEN||TOKEN==='{GITHUB_PAT}'){{
-    toast('⚠ Rerun not configured.<br>Add your GitHub username, repo, and PAT to the scraper. See README.',8000);
+  if(!TOKEN||TOKEN==='{GITHUB_PAT}'||TOKEN==='NOT_SET'){{
+    toast('⚠ Rerun not configured. See README to add your GitHub PAT.',7000);
     return;
   }}
   const btn=document.getElementById('rerun-btn');
@@ -641,8 +683,7 @@ async function rerun(){{
       toast('Workflow still running — reload in a few minutes.',5000);
       btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
     }}else{{
-      const txt=await res.text();
-      toast(`⚠ GitHub returned ${{res.status}}. Check your PAT has workflow permissions.<br><small>${{txt.slice(0,120)}}</small>`,9000);
+      toast(`⚠ GitHub returned ${{res.status}}. Check your PAT has workflow permissions.`,8000);
       btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
     }}
   }}catch(e){{
@@ -663,9 +704,8 @@ def main():
     print(f"\n{'='*60}\nNRC Scraper — {today_str}\n{'='*60}\n")
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    PDF_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1. Scrape
+    # 1. Scrape headlines from all sources
     all_headlines = []
     for source in SOURCES:
         print(f"Scraping: {source['name']}")
@@ -673,28 +713,38 @@ def main():
         time.sleep(1)
     print(f"\nTotal candidates: {len(all_headlines)}")
 
-    # 2. Filter
-    print("\nFiltering with Claude…")
+    # 2. Fetch full article text for ALL candidates
+    print("\nFetching full article text…")
+    for i, a in enumerate(all_headlines):
+        body = fetch_article_text(a["url"])
+        a["body"] = body
+        if (i+1) % 10 == 0:
+            print(f"  {i+1}/{len(all_headlines)} fetched")
+        time.sleep(0.3)
+
+    # 3. Filter using title + article text
+    print("\nFiltering with Claude (using full article text)…")
     relevant = filter_with_claude(client, all_headlines)
 
-    # 3. Extract data + generate PDFs
-    print(f"\nExtracting data + generating PDFs for {len(relevant)} articles…")
+    # Re-attach body text to filtered articles
+    body_map = {a["url"]: a.get("body","") for a in all_headlines}
+    for a in relevant:
+        a["body"] = body_map.get(a["url"],"")
+
+    # 4. Extract structured market data from full text
+    print(f"\nExtracting market data from {len(relevant)} articles…")
     enriched = []
     for i, a in enumerate(relevant):
         print(f"  [{i+1}/{len(relevant)}] {a['title'][:55]}…")
-        short_text, full_text, _ = fetch_article_text(a["url"])
-        data = extract_market_data(client, a, short_text)
-        art_id = hashlib.md5(a["url"].encode()).hexdigest()[:10]
-        article = {**a, **data, "date": today_str, "id": art_id}
-
-        # Generate PDF from full article text
-        pdf_filename = generate_pdf(article, full_text) if full_text.strip() else None
-        article["pdf_filename"] = pdf_filename
-
-        enriched.append(article)
+        data = extract_market_data(client, a)
+        enriched.append({
+            **a, **data,
+            "date": today_str,
+            "id": hashlib.md5(a["url"].encode()).hexdigest()[:10]
+        })
         time.sleep(0.5)
 
-    # 4. Archive
+    # 5. Archive
     archive = load_archive()
     existing = {a["url"] for a in archive}
     new_arts = [a for a in enriched if a["url"] not in existing]
@@ -702,15 +752,14 @@ def main():
     save_archive(full_archive)
     print(f"\n  {len(new_arts)} new → {len(full_archive)} total in archive")
 
-    # 5. Generate dashboard HTML
+    # 6. Generate dashboard
     print("\nGenerating HTML dashboard…")
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE,"w",encoding="utf-8") as f:
         f.write(generate_html(enriched, full_archive, today_str))
 
     print(f"\n{'='*60}")
-    print(f"Done → docs/index.html + {sum(1 for a in enriched if a.get('pdf_filename'))} PDFs in docs/pdfs/")
-    print(f"Push to GitHub to update your Pages link.")
+    print(f"Done → docs/index.html")
     print(f"{'='*60}\n")
 
 if __name__ == "__main__":
