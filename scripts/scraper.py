@@ -587,13 +587,16 @@ def main():
     for a in articles:
         enriched.append({**a, "date": today_str, "id": hashlib.md5(a["url"].encode()).hexdigest()[:10]})
 
-    # 4. Archive
+    # 4. Archive — keep only last 3 days of articles
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
     archive = load_archive()
+    archive = [a for a in archive if a.get("date","") >= cutoff]
     existing = {a["url"] for a in archive}
     new_arts = [a for a in enriched if a["url"] not in existing]
     full_archive = new_arts + archive
     save_archive(full_archive)
-    print(f"  {len(new_arts)} new → {len(full_archive)} total in archive")
+    print(f"  {len(new_arts)} new → {len(full_archive)} total in archive (last 3 days)")
 
     # 5. Generate dashboard
     print("\nGenerating dashboard…")
