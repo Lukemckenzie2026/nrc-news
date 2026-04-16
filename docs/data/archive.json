@@ -1,0 +1,122 @@
+[
+  {
+    "title": "$341M Refinancing Loan Secured For Cambridge Crossing Lab",
+    "url": "https://www.bisnow.com/boston/news/life-sciences/divcowest-secures-341m-refinancing-loan-for-cambridge-crossing-lab-133939",
+    "source": "Bisnow Boston",
+    "summary": "DivcoWest secured a $341M refinancing for a life science asset at Cambridge Crossing, demonstrating strong capital markets access for lab properties. This indicates continued lender confidence in Boston's life science sector despite broader CRE headwinds.",
+    "sentiment": "bullish",
+    "market": "Boston",
+    "asset_class": "Life Science",
+    "data_point": "$341M",
+    "date": "2026-04-16",
+    "id": "0a966abaa4"
+  },
+  {
+    "title": "JPMorgan Signs 250K SF Lease At South Station Tower",
+    "url": "https://www.bisnow.com/boston/news/office/jpmorgan-signs-250k-sf-lease-south-station-tower-133683",
+    "source": "Bisnow Boston",
+    "summary": "JPMorgan committed to a 250K SF office lease at South Station Tower, signaling institutional demand for high-quality Boston office space. This major lease demonstrates flight-to-quality trends that could support Class A office but may pressure Class B alternatives.",
+    "sentiment": "neutral",
+    "market": "Boston",
+    "asset_class": "Office",
+    "data_point": "250K SF",
+    "date": "2026-04-16",
+    "id": "00be022bd4"
+  },
+  {
+    "title": "Large Hudson Industrial Campus Secures Approval: The Boston Deal Sheet",
+    "url": "https://www.bisnow.com/boston/news/deal-sheet/national-development-secures-approval-for-950k-sf-hudson-industrial-project-the-boston-deal-sheet-134100",
+    "source": "Bisnow Boston",
+    "summary": "National Development secured approval for a 950K SF industrial campus in Hudson, adding significant supply to Boston's industrial market. This represents new development competition but also validates strong industrial demand in NRC's core market.",
+    "sentiment": "neutral",
+    "market": "Boston",
+    "asset_class": "Industrial",
+    "data_point": "950K SF",
+    "date": "2026-04-16",
+    "id": "4d75c85648"
+  },
+  {
+    "title": "Leggat McCall Lands $122M Loan For Bunker Hill Redevelopment: The Boston Deal Sheet",
+    "url": "https://www.bisnow.com/boston/news/deal-sheet/leggat-mccall-lands-122m-loan-bunker-hill-redevelopment-boston-deal-sheet-133980",
+    "source": "Bisnow Boston",
+    "summary": "Leggat McCall secured $122M construction financing for Bunker Hill redevelopment, indicating lender appetite for mixed-use projects in Boston. This suggests construction debt remains available for quality sponsors and locations despite tighter credit conditions.",
+    "sentiment": "bullish",
+    "market": "Boston",
+    "asset_class": "Capital Markets",
+    "data_point": "$122M",
+    "date": "2026-04-16",
+    "id": "bd5fbaa43c"
+  },
+  {
+    "title": "FBI Office Tower In Chelsea Sells For $134M",
+    "url": "https://www.bisnow.com/boston/news/office/fbi-office-tower-in-chelsea-sells-for-134m-133940",
+    "source": "Bisnow Boston",
+    "summary": "An FBI-occupied office tower in Chelsea traded for $134M, demonstrating transaction activity for credit-tenant office assets. Government-leased properties continue to attract buyers even as traditional office struggles with vacancies.",
+    "sentiment": "neutral",
+    "market": "Boston",
+    "asset_class": "Office",
+    "data_point": "$134M",
+    "date": "2026-04-16",
+    "id": "57e182da3c"
+  },
+  {
+    "title": "Starwood's LNR Submits Winning $95M Bid For Back Bay Office",
+    "url": "https://www.bisnow.com/boston/news/office/lender-bids-95m-back-bay-office-133832",
+    "source": "Bisnow Boston",
+    "summary": "Starwood's LNR Partners submitted a $95M winning bid for a distressed Back Bay office, indicating opportunistic capital is targeting Boston office assets. This represents potential acquisition opportunities for NRC in distressed Class B office scenarios.",
+    "sentiment": "bullish",
+    "market": "Boston",
+    "asset_class": "Office",
+    "data_point": "$95M",
+    "date": "2026-04-16",
+    "id": "9d018808ab"
+  },
+  {
+    "title": "STUDY: Rent Control Could Cost Massachusetts $300B In Lost Property Values",
+    "url": "https://www.bisnow.com/boston/news/multifamily/rent-control-could-cost-massachusetts-300b-property-values-study-133627",
+    "source": "Bisnow Boston",
+    "summary": "A study found potential rent control legislation could reduce Massachusetts property values by $300B, creating significant downside risk for multifamily assets. This represents a major regulatory threat to NRC's residential portfolio that could compress cap rates and returns.",
+    "sentiment": "bearish",
+    "market": "Boston",
+    "asset_class": "Multifamily",
+    "data_point": "$300B",
+    "date": "2026-04-16",
+    "id": "79bf4c94de"
+  },
+  {
+    "title": "BXP Sells Downtown Boston Residential Building For $55M: The Boston Deal Sheet",
+    "url": "https://www.bisnow.com/boston/news/deal-sheet/bxp-sells-downtown-boston-apartment-building-boston-deal-sheet-133474",
+    "source": "Bisnow Boston",
+    "summary": "Boston Properties sold a downtown residential building for $55M, showing continued transaction activity in Boston multifamily. Major REITs divesting residential assets may create acquisition opportunities for private equity firms like NRC.",
+    "sentiment": "neutral",
+    "market": "Boston",
+    "asset_class": "Multifamily",
+    "data_point": "$55M",
+    "date": "2026-04-16",
+    "id": "af22ea701f"
+  },
+  {
+    "title": "Lightstone Acquires Rhode Island Biomanufacturing Facility For $68M: The Boston Deal Sheet",
+    "url": "https://www.bisnow.com/boston/news/deal-sheet/lightstone-acquires-rhode-island-biomanufacturing-facility-for-68m-the-boston-deal-sheet-133898",
+    "source": "Bisnow Boston",
+    "summary": "Lightstone acquired a Rhode Island biomanufacturing facility for $68M, showing institutional interest in specialized life science properties near Boston. This validates demand for industrial/life science hybrid assets in NRC's regional footprint.",
+    "sentiment": "bullish",
+    "market": "Boston",
+    "asset_class": "Life Science",
+    "data_point": "$68M",
+    "date": "2026-04-16",
+    "id": "c7fbee1be3"
+  },
+  {
+    "title": "W&D Provides $1.7B Refi for Starwood Affordable Housing Portfolio",
+    "url": "https://commercialobserver.com/2026/04/wd-starwood-affordable-housing/",
+    "source": "Commercial Observer",
+    "summary": "Walker & Dunlop provided $1.7B refinancing for Starwood's 13,000-unit affordable housing portfolio, demonstrating robust debt markets for stabilized multifamily. This signals that lenders remain active for large-scale residential portfolios despite economic uncertainty.",
+    "sentiment": "bullish",
+    "market": "National",
+    "asset_class": "Multifamily",
+    "data_point": "$1.7B",
+    "date": "2026-04-16",
+    "id": "bfdb2fa6e1"
+  }
+]

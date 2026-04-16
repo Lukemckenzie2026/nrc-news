@@ -3,285 +3,450 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NRC Market Intelligence — April 15, 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>NRC Market Intelligence — April 16, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0d1c2e;--navy2:#152540;--navy3:#1d3560;
-  --blue:#2660a4;--bluel:#4a8fd4;--bluep:#deeaf8;
-  --gold:#b8924a;--goldp:#f7edd9;
-  --w:#fff;--off:#f5f7fa;
-  --g1:#eaecf2;--g2:#ced4e0;--g4:#8492a8;--g6:#4a5668;
-  --green:#1e6e4a;--red:#b53325;
-  --r:6px;
+  --navy:#0d1c2e;--navy2:#1a2e44;
+  --blue:#1a3a5c;--bluel:#2d5f8a;
+  --w:#ffffff;--off:#f8f9fb;--off2:#f2f4f7;
+  --g1:#e8ecf2;--g2:#d0d6e0;--g3:#b0bac8;--g4:#7a8898;--g6:#3a4858;
+  --green:#1e5c3a;--greenl:#2a7d50;--red:#8b2315;--redl:#b53325;
+  --border:#e2e6ed;
+  --font:'Inter',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);font-size:14px;line-height:1.6;}
+body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:13px;line-height:1.5;}
 
-/* TOPBAR */
-.topbar{background:var(--navy);position:sticky;top:0;z-index:300;}
-.topbar-inner{max-width:1200px;margin:0 auto;padding:0 28px;height:52px;display:flex;align-items:center;gap:20px;}
-.tb-brand .tb-name{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#fff;letter-spacing:.3px;line-height:1;}
-.tb-brand .tb-sub{font-family:'DM Mono',monospace;font-size:8px;color:var(--bluel);text-transform:uppercase;letter-spacing:2px;}
-.tb-date{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);border-left:1px solid rgba(255,255,255,0.1);padding-left:18px;}
-.tb-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
-.tb-nav button{background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);border-radius:4px;padding:5px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
-.tb-nav button:hover,.tb-nav button.on{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);}
-.rerun-btn{background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:5px 16px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
-.rerun-btn:hover{opacity:.88;}
-.rerun-btn:disabled{opacity:.5;cursor:wait;}
-
-/* PROGRESS */
-.prog-wrap{height:2px;background:rgba(255,255,255,0.06);overflow:hidden;display:none;}
+/* ── TOP HEADER ── */
+.top-header{background:var(--w);border-bottom:1px solid var(--border);padding:0 28px;height:48px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:200;}
+.th-logo{display:flex;align-items:center;gap:10px;}
+.th-nrc{width:32px;height:32px;background:var(--navy);border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;letter-spacing:.5px;}
+.th-title{font-size:15px;font-weight:600;color:var(--navy);}
+.th-date{font-size:12px;color:var(--g4);}
+.th-markets{margin-left:auto;font-size:11px;color:var(--g4);}
+.th-markets span{margin-left:8px;}
+.rerun-btn{background:var(--navy);color:#fff;border:none;border-radius:4px;padding:5px 14px;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;transition:opacity .15s;margin-left:16px;}
+.rerun-btn:hover{opacity:.8;}.rerun-btn:disabled{opacity:.4;cursor:wait;}
+.prog-wrap{height:2px;background:var(--g1);overflow:hidden;display:none;position:fixed;top:48px;left:0;right:0;z-index:201;}
 .prog-wrap.show{display:block;}
-.prog-fill{height:100%;width:0%;background:var(--gold);transition:width .5s ease;}
+.prog-fill{height:100%;width:0%;background:var(--bluel);transition:width .5s ease;}
 
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--navy);color:#fff;border-radius:var(--r);padding:12px 20px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;border-left:3px solid var(--gold);max-width:360px;line-height:1.5;}
-.toast.show{opacity:1;transform:translateY(0);}
+/* ── LAYOUT ── */
+.page{max-width:1100px;margin:0 auto;padding:20px 24px;}
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
 
-/* HERO */
-.hero{background:linear-gradient(135deg,var(--navy2) 0%,var(--navy3) 100%);padding:28px 28px 24px;border-bottom:1px solid rgba(255,255,255,0.05);}
-.hero-inner{max-width:1200px;margin:0 auto;display:flex;align-items:flex-end;gap:32px;}
-.hero-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;color:#fff;line-height:1.1;letter-spacing:-.3px;}
-.hero-title em{color:var(--gold);font-style:normal;}
-.hero-pills{display:flex;gap:10px;margin-left:auto;flex-shrink:0;}
-.hpill{text-align:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r);padding:10px 18px;}
-.hpill-val{font-family:'Cormorant Garamond',serif;font-size:26px;color:#fff;line-height:1;}
-.hpill-lbl{font-size:9px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
+/* ── STAT CARDS ── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
+.stat-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--g4);margin-bottom:6px;font-family:'DM Mono',monospace;}
+.stat-value{font-size:26px;font-weight:700;color:var(--navy);line-height:1;margin-bottom:4px;}
+.stat-note{font-size:11px;}
 
-/* LAYOUT */
-.wrap{max-width:1200px;margin:0 auto;padding:24px 28px;}
+/* ── SECTION HEADERS ── */
+.sec-header{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);margin-bottom:10px;font-family:'DM Mono',monospace;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* ── HEADLINE LIST ── */
+.hl-panel{background:var(--w);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.hl-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--g1);text-decoration:none;color:inherit;transition:background .12s;}
+.hl-row:last-child{border-bottom:none;}
+.hl-row:hover{background:var(--off2);}
+.hl-left{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;}
+.hl-text{flex:1;min-width:0;}
+.hl-title{font-size:13px;font-weight:500;color:var(--navy);line-height:1.35;margin-bottom:2px;}
+.hl-sub{font-size:11px;color:var(--g4);}
+.hl-right{flex-shrink:0;}
+.data-point{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--bluel);background:#eef3fb;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;}
+.sent-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+/* BADGES */
+.mbadge{display:inline-block;font-size:9px;font-weight:600;color:#fff;padding:2px 7px;border-radius:3px;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-top:2px;}
+.abadge{display:inline-block;font-size:9px;color:#fff;padding:1px 6px;border-radius:3px;}
+.sent-pill{font-size:9px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;font-weight:600;}
+
+/* ── RIGHT PANEL ── */
+.right-col{display:flex;flex-direction:column;gap:16px;}
+
+.signal-panel{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:16px;}
+.signal-card{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--g1);}
+.signal-card:last-child{border-bottom:none;padding-bottom:0;}
+.signal-card:first-child{padding-top:0;}
+.signal-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;}
+.signal-summary{font-size:12px;color:var(--g6);line-height:1.5;margin-bottom:2px;}
+.signal-source{font-size:10px;color:var(--g3);font-family:'DM Mono',monospace;}
+
+/* VACANCY WATCH */
+.vacancy-panel{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:16px;}
+.vac-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g1);}
+.vac-row:last-child{border-bottom:none;}
+.vac-label{font-size:12px;color:var(--g6);}
+.vac-val{font-size:12px;font-weight:600;color:var(--navy);font-family:'DM Mono',monospace;}
+.vac-bar{width:80px;height:4px;background:var(--g1);border-radius:2px;margin:0 10px;overflow:hidden;}
+.vac-fill{height:100%;border-radius:2px;}
+
+/* ── TRANSACTIONS ── */
+.tx-panel{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:16px 16px 4px;margin-top:20px;}
+.tx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:0;}
+.tx-cell{background:var(--w);padding:12px 14px;}
+.tx-addr{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:3px;}
+.tx-detail{font-size:13px;font-weight:700;color:var(--bluel);font-family:'DM Mono',monospace;margin-bottom:2px;}
+.tx-who{font-size:11px;color:var(--g4);}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.tab-btn{background:none;border:none;padding:8px 18px;font-size:13px;font-weight:500;color:var(--g4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:var(--font);transition:all .15s;}
+.tab-btn.on{color:var(--navy);border-bottom-color:var(--navy);}
 .tab-pane{display:none;}.tab-pane.on{display:block;}
 
-/* FILTER ROW */
-.frow{display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-.flabel{font-size:10px;font-family:'DM Mono',monospace;color:var(--g4);text-transform:uppercase;letter-spacing:1.5px;}
-.fchip{border:1px solid var(--g2);background:var(--w);border-radius:20px;padding:4px 13px;font-size:12px;cursor:pointer;color:var(--g6);transition:all .15s;}
-.fchip:hover{border-color:var(--blue);color:var(--blue);}
-.fchip.on{background:var(--navy);border-color:var(--navy);color:#fff;}
-.fsearch{border:1px solid var(--g2);border-radius:20px;padding:4px 14px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;width:200px;margin-left:auto;transition:border-color .2s;}
-.fsearch:focus{border-color:var(--blue);}
-
-/* ARTICLE CARDS */
-.cards{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
-.acard{background:var(--w);border:1px solid var(--g2);border-radius:var(--r);transition:all .2s;animation:fu .25s ease both;overflow:hidden;}
-.acard:hover{border-color:var(--bluel);box-shadow:0 2px 12px rgba(13,28,46,0.07);}
-@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-.acard-body{padding:16px 20px;}
-.acard-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
-.acard-source{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);font-weight:500;}
-.badge-today{font-size:9px;background:rgba(30,110,74,0.1);color:var(--green);padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:1px;}
-.badge-date{font-size:9px;background:var(--g1);color:var(--g4);padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;}
-.sent-pill{font-size:9px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:.5px;font-weight:500;}
-.acard-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
-
-/* BUTTONS */
-.btn-sm{font-size:11px;padding:4px 11px;border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none;display:inline-block;white-space:nowrap;border:1px solid transparent;font-weight:500;}
-.btn-read{border-color:var(--g2);color:var(--g6);background:transparent;}.btn-read:hover{border-color:var(--blue);color:var(--blue);background:var(--bluep);}
-.btn-pdf{border-color:var(--gold);color:var(--gold);background:var(--goldp);}.btn-pdf:hover{background:var(--gold);color:var(--navy);}
-.btn-disabled{border-color:var(--g1);color:var(--g4);background:var(--off);cursor:not-allowed;opacity:.6;}
-
-.acard-title{display:block;font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--navy);text-decoration:none;line-height:1.3;margin-bottom:6px;transition:color .15s;}
-.acard-title:hover{color:var(--blue);}
-.acard-summary{font-size:13px;color:var(--g6);line-height:1.6;margin-bottom:4px;}
-.acard-relevance{font-size:12px;color:var(--gold);border-left:2px solid var(--goldp);padding-left:9px;margin-top:6px;font-style:italic;}
-
-.chips-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
-.dchip{display:inline-flex;border-radius:3px;overflow:hidden;border:1px solid var(--g2);font-size:11px;}
-.dchip-k{background:var(--navy);color:rgba(255,255,255,0.45);padding:2px 7px;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
-.dchip-v{background:var(--w);color:var(--navy);padding:2px 8px;font-weight:600;font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap;}
-
-.acard-tags{padding:8px 20px;border-top:1px solid var(--g1);display:flex;gap:6px;background:var(--off);}
-.tag-market{font-size:10px;background:var(--bluep);color:var(--blue);padding:2px 8px;border-radius:3px;font-family:'DM Mono',monospace;}
-.tag-asset{font-size:10px;background:var(--goldp);color:var(--gold);padding:2px 8px;border-radius:3px;font-family:'DM Mono',monospace;}
-
-/* SNAPSHOT */
-.section-label{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--g4);margin-bottom:12px;}
-.snapshot{background:var(--w);border:1px solid var(--g2);border-radius:var(--r);overflow:hidden;}
-.snap-row{display:flex;border-bottom:1px solid var(--g1);}.snap-row:last-child{border-bottom:none;}
-.snap-lbl{width:120px;flex-shrink:0;padding:11px 14px;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--g4);background:var(--off);border-right:1px solid var(--g1);display:flex;align-items:flex-start;padding-top:13px;}
-.snap-hits{flex:1;}
-.snap-item{display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--g1);}.snap-item:last-child{border-bottom:none;}
-.snap-hed{font-size:12px;color:var(--g6);text-decoration:none;flex:1;min-width:0;line-height:1.4;}.snap-hed:hover{color:var(--blue);}
-.snap-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;background:var(--goldp);padding:2px 9px;border-radius:3px;border:1px solid rgba(184,146,74,0.2);}
-.snap-src{font-size:10px;color:var(--g4);white-space:nowrap;font-family:'DM Mono',monospace;}
-.snap-empty{padding:24px;text-align:center;color:var(--g4);font-size:12px;font-family:'DM Mono',monospace;}
-
-/* ARCHIVE */
-.arc-wrap{background:var(--w);border:1px solid var(--g2);border-radius:var(--r);overflow:auto;}
-.arc-table{width:100%;border-collapse:collapse;font-size:13px;}
+/* ── ARCHIVE ── */
+.arc-wrap{background:var(--w);border:1px solid var(--border);border-radius:6px;overflow:auto;}
+.arc-table{width:100%;border-collapse:collapse;font-size:12px;}
 .arc-table th{text-align:left;padding:9px 14px;font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);border-bottom:2px solid var(--g1);background:var(--off);white-space:nowrap;}
-.arc-table td{padding:10px 14px;border-bottom:1px solid var(--g1);vertical-align:middle;}.arc-table tr:last-child td{border-bottom:none;}.arc-table tr:hover td{background:#f0f5fd;}
-.arc-link{color:var(--navy);font-weight:500;text-decoration:none;}.arc-link:hover{color:var(--blue);text-decoration:underline;}
-.arc-pdf{font-size:11px;color:var(--gold);text-decoration:none;font-weight:600;border:1px solid var(--goldp);padding:2px 8px;border-radius:3px;background:var(--goldp);}.arc-pdf:hover{background:var(--gold);color:var(--navy);}
-.td-mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--g4);white-space:nowrap;}
-.td-src{font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);white-space:nowrap;}
-.td-num{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--navy);}
+.arc-table td{padding:10px 14px;border-bottom:1px solid var(--g1);vertical-align:top;}
+.arc-table tr:last-child td{border-bottom:none;}.arc-table tr:hover td{background:var(--off2);}
+.arc-link{color:var(--navy);font-weight:500;text-decoration:none;}.arc-link:hover{color:var(--bluel);text-decoration:underline;}
+.td-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--g4);white-space:nowrap;}
+.td-sum{font-size:11px;color:var(--g4);line-height:1.5;max-width:360px;}
+.frow{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.fsearch{border:1px solid var(--border);border-radius:4px;padding:5px 12px;font-size:12px;font-family:var(--font);outline:none;width:200px;margin-left:auto;}
+.fsearch:focus{border-color:var(--bluel);}
 
-.empty{text-align:center;padding:48px;color:var(--g4);font-family:'DM Mono',monospace;font-size:13px;}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--navy);color:#fff;border-radius:4px;padding:10px 16px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;border-left:3px solid #4a8fd4;max-width:300px;line-height:1.5;}
+.toast.show{opacity:1;transform:translateY(0);}
 
-@media(max-width:800px){.hero-pills{display:none;}.wrap{padding:16px;}.topbar-inner{padding:0 16px;}.hero{padding:20px 16px;}}
+.empty{text-align:center;padding:48px;color:var(--g4);font-size:12px;font-family:'DM Mono',monospace;}
+
+@media(max-width:900px){
+  .two-col{grid-template-columns:1fr;}
+  .right-col{display:none;}
+  .stat-row{grid-template-columns:repeat(2,1fr);}
+  .tx-grid{grid-template-columns:repeat(2,1fr);}
+  .page{padding:12px 14px;}
+  .top-header{padding:0 14px;}
+  .th-markets{display:none;}
+}
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="prog-wrap" id="prog"><div class="prog-fill" id="prog-fill"></div></div>
-  <div class="topbar-inner">
-    <div class="tb-brand">
-      <div class="tb-name">North River Company</div>
-      <div class="tb-sub">Market Intelligence</div>
+<div class="prog-wrap" id="prog"><div class="prog-fill" id="prog-fill"></div></div>
+
+<header class="top-header">
+  <div class="th-logo">
+    <div class="th-nrc">NRC</div>
+    <div>
+      <div class="th-title">Market Intelligence Dashboard</div>
+      <div class="th-date">April 16, 2026</div>
     </div>
-    <div class="tb-date">April 15, 2026</div>
-    <div class="tb-right">
-      <div class="tb-nav">
-        <button class="on" onclick="switchTab('today',this)">Today</button>
-        <button onclick="switchTab('archive',this)">Archive</button>
-      </div>
-      <button class="rerun-btn" id="rerun-btn" onclick="rerun()">↻ Rerun</button>
+  </div>
+  <div class="th-markets">
+    <span>Boston</span><span>·</span><span>New York</span><span>·</span>
+    <span>Maine</span><span>·</span><span>Pittsburgh</span><span>·</span><span>California</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-left:16px;">
+    <div class="tab-bar" style="border:none;margin:0;gap:4px;">
+      <button class="tab-btn on" onclick="switchTab('today',this)" style="padding:4px 12px;font-size:12px;">Today</button>
+      <button class="tab-btn" onclick="switchTab('archive',this)" style="padding:4px 12px;font-size:12px;">Archive</button>
     </div>
+    <button class="rerun-btn" id="rerun-btn" onclick="rerun()">↻ Rerun</button>
   </div>
 </header>
 
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-title">Daily Market<br><em>Intelligence Brief</em></div>
-    <div class="hero-pills">
-      <div class="hpill"><div class="hpill-val">3</div><div class="hpill-lbl">Articles</div></div>
-      <div class="hpill"><div class="hpill-val">17</div><div class="hpill-lbl">Data Points</div></div>
-      <div class="hpill"><div class="hpill-val" style="color:#5ecf9e">2</div><div class="hpill-lbl">Bullish</div></div>
-      <div class="hpill"><div class="hpill-val" style="color:#e07060">1</div><div class="hpill-lbl">Bearish</div></div>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
+<div class="page">
 
   <div class="tab-pane on" id="tab-today">
-    <div class="frow">
-      <span class="flabel">Filter:</span>
-      <div class="fchip on" onclick="filterSent('all',this)">All</div>
-      <div class="fchip" onclick="filterSent('bullish',this)">● Bullish</div>
-      <div class="fchip" onclick="filterSent('bearish',this)">● Bearish</div>
-      <div class="fchip" onclick="filterSent('neutral',this)">● Neutral</div>
-      <input class="fsearch" placeholder="Search…" id="search-today" oninput="applyFilters()">
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      <div class="stat-card">
+  <div class="stat-label">Boston Life Science Refi</div>
+  <div class="stat-value">$341M</div>
+  <div class="stat-note" style="color:#1e6e4a">↑ Cambridge Crossing lab secured major refinancing</div>
+</div><div class="stat-card">
+  <div class="stat-label">MA Rent Control Impact</div>
+  <div class="stat-value">$300B</div>
+  <div class="stat-note" style="color:#b53325">↓ Potential property value loss from proposed rent control</div>
+</div><div class="stat-card">
+  <div class="stat-label">Hudson Industrial Development</div>
+  <div class="stat-value">950K SF</div>
+  <div class="stat-note" style="color:#1e6e4a">↑ Major industrial campus approved in Boston market</div>
+</div><div class="stat-card">
+  <div class="stat-label">National Multifamily Refi</div>
+  <div class="stat-value">$1.7B</div>
+  <div class="stat-note" style="color:#1e6e4a">↑ Starwood 13,000-unit portfolio refinancing signals debt availability</div>
+</div>
     </div>
-    <div class="cards" id="cards-today"><article class="acard" data-sentiment="bullish" id="card-a1b2c3d4e5">
-  <div class="acard-body">
-    <div class="acard-meta">
-      <span class="acard-source">Bisnow Boston</span>
-      <span class="badge-today">TODAY</span>
-      <span class="sent-pill" style="color:#1e6e4a;background:rgba(30,110,74,0.08)">BULLISH</span>
-      <div class="acard-actions">
-        <a href="https://bisnow.com" target="_blank" class="btn-sm btn-read">Read ↗</a>
-        <span class="btn-sm btn-disabled" title="PDF unavailable (paywalled or no content)">↓ PDF</span>
+
+    <div class="two-col">
+
+      <!-- LEFT: HEADLINES -->
+      <div>
+        <div class="sec-header">Top Headlines — All Markets</div>
+        <div class="hl-panel">
+          <a class="hl-row" href="https://www.bisnow.com/boston/news/life-sciences/divcowest-secures-341m-refinancing-loan-for-cambridge-crossing-lab-133939" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">$341M Refinancing Loan Secured For Cambridge Crossing Lab<span class="data-point">$341M</span></div>
+      <div class="hl-sub">Life Science · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/office/jpmorgan-signs-250k-sf-lease-south-station-tower-133683" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">JPMorgan Signs 250K SF Lease At South Station Tower<span class="data-point">250K SF</span></div>
+      <div class="hl-sub">Office · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#2660a4" title="neutral"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/deal-sheet/national-development-secures-approval-for-950k-sf-hudson-industrial-project-the-boston-deal-sheet-134100" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">Large Hudson Industrial Campus Secures Approval: The Boston Deal Sheet<span class="data-point">950K SF</span></div>
+      <div class="hl-sub">Industrial · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#2660a4" title="neutral"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/deal-sheet/leggat-mccall-lands-122m-loan-bunker-hill-redevelopment-boston-deal-sheet-133980" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">Leggat McCall Lands $122M Loan For Bunker Hill Redevelopment: The Boston Deal Sheet<span class="data-point">$122M</span></div>
+      <div class="hl-sub">Capital Markets · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/office/fbi-office-tower-in-chelsea-sells-for-134m-133940" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">FBI Office Tower In Chelsea Sells For $134M<span class="data-point">$134M</span></div>
+      <div class="hl-sub">Office · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#2660a4" title="neutral"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/office/lender-bids-95m-back-bay-office-133832" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">Starwood's LNR Submits Winning $95M Bid For Back Bay Office<span class="data-point">$95M</span></div>
+      <div class="hl-sub">Office · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/multifamily/rent-control-could-cost-massachusetts-300b-property-values-study-133627" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">STUDY: Rent Control Could Cost Massachusetts $300B In Lost Property Values<span class="data-point">$300B</span></div>
+      <div class="hl-sub">Multifamily · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#b53325" title="bearish"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/deal-sheet/bxp-sells-downtown-boston-apartment-building-boston-deal-sheet-133474" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">BXP Sells Downtown Boston Residential Building For $55M: The Boston Deal Sheet<span class="data-point">$55M</span></div>
+      <div class="hl-sub">Multifamily · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#2660a4" title="neutral"></span>
+  </div>
+</a><a class="hl-row" href="https://www.bisnow.com/boston/news/deal-sheet/lightstone-acquires-rhode-island-biomanufacturing-facility-for-68m-the-boston-deal-sheet-133898" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#1a3a5c">Boston</span>
+    <div class="hl-text">
+      <div class="hl-title">Lightstone Acquires Rhode Island Biomanufacturing Facility For $68M: The Boston Deal Sheet<span class="data-point">$68M</span></div>
+      <div class="hl-sub">Life Science · Bisnow Boston</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a><a class="hl-row" href="https://commercialobserver.com/2026/04/wd-starwood-affordable-housing/" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#4a4a4a">National</span>
+    <div class="hl-text">
+      <div class="hl-title">W&amp;D Provides $1.7B Refi for Starwood Affordable Housing Portfolio<span class="data-point">$1.7B</span></div>
+      <div class="hl-sub">Multifamily · Commercial Observer</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a>
+        </div>
+
+        <!-- TRANSACTIONS -->
+        <div class="tx-panel" style="margin-top:20px;">
+          <div class="sec-header">Notable Transactions — Recent Closes &amp; Filings</div>
+          <div class="tx-grid"><div class="tx-cell">
+  <div class="tx-addr">Cambridge Crossing Lab</div>
+  <div class="tx-detail">$341M refinancing</div>
+  <div class="tx-who">DivcoWest</div>
+</div><div class="tx-cell">
+  <div class="tx-addr">South Station Tower</div>
+  <div class="tx-detail">250K SF lease</div>
+  <div class="tx-who">JPMorgan</div>
+</div><div class="tx-cell">
+  <div class="tx-addr">FBI Tower, Chelsea</div>
+  <div class="tx-detail">$134M sale</div>
+  <div class="tx-who">Sale</div>
+</div><div class="tx-cell">
+  <div class="tx-addr">Bunker Hill Redevelopment</div>
+  <div class="tx-detail">$122M construction loan</div>
+  <div class="tx-who">Leggat McCall</div>
+</div><div class="tx-cell">
+  <div class="tx-addr">Back Bay Office</div>
+  <div class="tx-detail">$95M sale</div>
+  <div class="tx-who">Starwood LNR</div>
+</div><div class="tx-cell">
+  <div class="tx-addr">RI Biomanufacturing Facility</div>
+  <div class="tx-detail">$68M acquisition</div>
+  <div class="tx-who">Lightstone</div>
+</div></div>
+        </div>
       </div>
-    </div>
-    <a class="acard-title" href="https://bisnow.com" target="_blank">Life Science Demand in Boston Seaport Rebounds</a>
-    <p class="acard-summary">Boston Seaport life science seeing renewed interest as VC funding accelerates. Lab vacancy declining after supply glut.</p>
-    <p class="acard-relevance">Directly relevant to NRC Boston life science holdings.</p>
-    <div class="chips-row"><span class="dchip"><span class="dchip-k">Vacancy</span><span class="dchip-v">14.2%</span></span><span class="dchip"><span class="dchip-k">Rent</span><span class="dchip-v">$85 PSF NNN</span></span><span class="dchip"><span class="dchip-k">Absorption</span><span class="dchip-v">+180,000 SF</span></span><span class="dchip"><span class="dchip-k">Pipeline</span><span class="dchip-v">1.4M SF</span></span><span class="dchip"><span class="dchip-k">Tenant</span><span class="dchip-v">Flagship Pioneering</span></span></div>
+
+      <!-- RIGHT: SIGNALS + VACANCY -->
+      <div class="right-col">
+        <div class="signal-panel">
+          <div class="sec-header">Market Signals</div>
+          <div class="signal-card">
+  <div class="signal-icon" style="background:#1e6e4a">↑</div>
+  <div class="signal-body">
+    <div class="signal-summary">DivcoWest secured a $341M refinancing for a life science asset at Cambridge Crossing, demonstrating strong capital markets access for lab properties. This indicates continued lender confidence in Boston's life science sector despite broader CRE headwinds.</div>
+    <div class="signal-source">Bisnow Boston</div>
   </div>
-  <div class="acard-tags">
-    <span class="tag-market">Boston</span>
-    <span class="tag-asset">Life Science</span>
+</div><div class="signal-card">
+  <div class="signal-icon" style="background:#2660a4">i</div>
+  <div class="signal-body">
+    <div class="signal-summary">JPMorgan committed to a 250K SF office lease at South Station Tower, signaling institutional demand for high-quality Boston office space. This major lease demonstrates flight-to-quality trends that could support Class A office but may pressure Class B alternatives.</div>
+    <div class="signal-source">Bisnow Boston</div>
   </div>
-</article><article class="acard" data-sentiment="bullish" id="card-b2c3d4e5f6">
-  <div class="acard-body">
-    <div class="acard-meta">
-      <span class="acard-source">GlobeSt</span>
-      <span class="badge-today">TODAY</span>
-      <span class="sent-pill" style="color:#1e6e4a;background:rgba(30,110,74,0.08)">BULLISH</span>
-      <div class="acard-actions">
-        <a href="https://globest.com" target="_blank" class="btn-sm btn-read">Read ↗</a>
-        <span class="btn-sm btn-disabled" title="PDF unavailable (paywalled or no content)">↓ PDF</span>
+</div><div class="signal-card">
+  <div class="signal-icon" style="background:#2660a4">i</div>
+  <div class="signal-body">
+    <div class="signal-summary">National Development secured approval for a 950K SF industrial campus in Hudson, adding significant supply to Boston's industrial market. This represents new development competition but also validates strong industrial demand in NRC's core market.</div>
+    <div class="signal-source">Bisnow Boston</div>
+  </div>
+</div><div class="signal-card">
+  <div class="signal-icon" style="background:#1e6e4a">↑</div>
+  <div class="signal-body">
+    <div class="signal-summary">Leggat McCall secured $122M construction financing for Bunker Hill redevelopment, indicating lender appetite for mixed-use projects in Boston. This suggests construction debt remains available for quality sponsors and locations despite tighter credit conditions.</div>
+    <div class="signal-source">Bisnow Boston</div>
+  </div>
+</div><div class="signal-card">
+  <div class="signal-icon" style="background:#2660a4">i</div>
+  <div class="signal-body">
+    <div class="signal-summary">An FBI-occupied office tower in Chelsea traded for $134M, demonstrating transaction activity for credit-tenant office assets. Government-leased properties continue to attract buyers even as traditional office struggles with vacancies.</div>
+    <div class="signal-source">Bisnow Boston</div>
+  </div>
+</div>
+        </div>
+
+        <div class="vacancy-panel">
+          <div class="sec-header">Vacancy Watch — Boston Sub-Markets</div>
+          <div class="vac-row"><span class="vac-label">Industrial (Greater Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:25%;background:var(--greenl)"></div></div><span class="vac-val">950K SF</span></div>
+          <div class="vac-row"><span class="vac-label">Office (Metro Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:85%;background:var(--redl)"></div></div><span class="vac-val">~18%</span></div>
+          <div class="vac-row"><span class="vac-label">Lab / Life Science</span><div class="vac-bar"><div class="vac-fill" style="width:55%;background:#b8924a)"></div></div><span class="vac-val">Recovering</span></div>
+          <div class="vac-row"><span class="vac-label">Multifamily (Metro)</span><div class="vac-bar"><div class="vac-fill" style="width:20%;background:var(--greenl)"></div></div><span class="vac-val">Tight</span></div>
+        </div>
       </div>
+
     </div>
-    <a class="acard-title" href="https://globest.com" target="_blank">Industrial Cap Rates Compress in Northeast Despite Headwinds</a>
-    <p class="acard-summary">Industrial cap rates tightened 25bps in Q1. Rent growth offsetting higher financing costs.</p>
-    <p class="acard-relevance">Key signal for NRC industrial acquisitions in Boston and Pittsburgh.</p>
-    <div class="chips-row"><span class="dchip"><span class="dchip-k">Vacancy</span><span class="dchip-v">4.8%</span></span><span class="dchip"><span class="dchip-k">Cap Rate</span><span class="dchip-v">5.25%</span></span><span class="dchip"><span class="dchip-k">Rent</span><span class="dchip-v">$14.50 PSF NNN</span></span><span class="dchip"><span class="dchip-k">Deal</span><span class="dchip-v">$62M</span></span><span class="dchip"><span class="dchip-k">Absorption</span><span class="dchip-v">+340,000 SF</span></span><span class="dchip"><span class="dchip-k">Debt</span><span class="dchip-v">SOFR + 260bps</span></span><span class="dchip"><span class="dchip-k">Pipeline</span><span class="dchip-v">900,000 SF</span></span></div>
-  </div>
-  <div class="acard-tags">
-    <span class="tag-market">Boston, Pittsburgh</span>
-    <span class="tag-asset">Industrial</span>
-  </div>
-</article><article class="acard" data-sentiment="bearish" id="card-c3d4e5f6g7">
-  <div class="acard-body">
-    <div class="acard-meta">
-      <span class="acard-source">CoStar News</span>
-      <span class="badge-today">TODAY</span>
-      <span class="sent-pill" style="color:#b53325;background:rgba(181,51,37,0.08)">BEARISH</span>
-      <div class="acard-actions">
-        <a href="https://costar.com" target="_blank" class="btn-sm btn-read">Read ↗</a>
-        <span class="btn-sm btn-disabled" title="PDF unavailable (paywalled or no content)">↓ PDF</span>
-      </div>
-    </div>
-    <a class="acard-title" href="https://costar.com" target="_blank">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a>
-    <p class="acard-summary">Office CMBS delinquency at 8.4%. Boston and Pittsburgh Class B showing stress.</p>
-    <p class="acard-relevance">Relevant to NRC Class B office exposure and distressed opportunities.</p>
-    <div class="chips-row"><span class="dchip"><span class="dchip-k">Vacancy</span><span class="dchip-v">19.1%</span></span><span class="dchip"><span class="dchip-k">Cap Rate</span><span class="dchip-v">7.8%</span></span><span class="dchip"><span class="dchip-k">Rent</span><span class="dchip-v">$32 PSF</span></span><span class="dchip"><span class="dchip-k">Absorption</span><span class="dchip-v">-220,000 SF</span></span><span class="dchip"><span class="dchip-k">Debt</span><span class="dchip-v">8.4% delinquency</span></span></div>
-  </div>
-  <div class="acard-tags">
-    <span class="tag-market">National</span>
-    <span class="tag-asset">Office</span>
-  </div>
-</article></div>
-    <div class="section-label">Market Data Snapshot — AI extracted from today's articles</div>
-    <div class="snapshot"><div class="snap-row"><div class="snap-lbl">Vacancy</div><div class="snap-hits"><div class="snap-item"><a href="https://bisnow.com" target="_blank" class="snap-hed">Life Science Demand in Boston Seaport Rebounds</a><span class="snap-val">14.2%</span><span class="snap-src">Bisnow Boston</span></div><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">4.8%</span><span class="snap-src">GlobeSt</span></div><div class="snap-item"><a href="https://costar.com" target="_blank" class="snap-hed">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a><span class="snap-val">19.1%</span><span class="snap-src">CoStar News</span></div></div></div><div class="snap-row"><div class="snap-lbl">Cap Rate</div><div class="snap-hits"><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">5.25%</span><span class="snap-src">GlobeSt</span></div><div class="snap-item"><a href="https://costar.com" target="_blank" class="snap-hed">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a><span class="snap-val">7.8%</span><span class="snap-src">CoStar News</span></div></div></div><div class="snap-row"><div class="snap-lbl">Asking Rent</div><div class="snap-hits"><div class="snap-item"><a href="https://bisnow.com" target="_blank" class="snap-hed">Life Science Demand in Boston Seaport Rebounds</a><span class="snap-val">$85 PSF NNN</span><span class="snap-src">Bisnow Boston</span></div><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">$14.50 PSF NNN</span><span class="snap-src">GlobeSt</span></div><div class="snap-item"><a href="https://costar.com" target="_blank" class="snap-hed">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a><span class="snap-val">$32 PSF</span><span class="snap-src">CoStar News</span></div></div></div><div class="snap-row"><div class="snap-lbl">Transaction</div><div class="snap-hits"><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">$62M</span><span class="snap-src">GlobeSt</span></div></div></div><div class="snap-row"><div class="snap-lbl">Absorption</div><div class="snap-hits"><div class="snap-item"><a href="https://bisnow.com" target="_blank" class="snap-hed">Life Science Demand in Boston Seaport Rebounds</a><span class="snap-val">+180,000 SF</span><span class="snap-src">Bisnow Boston</span></div><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">+340,000 SF</span><span class="snap-src">GlobeSt</span></div><div class="snap-item"><a href="https://costar.com" target="_blank" class="snap-hed">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a><span class="snap-val">-220,000 SF</span><span class="snap-src">CoStar News</span></div></div></div><div class="snap-row"><div class="snap-lbl">Debt / Rate</div><div class="snap-hits"><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">SOFR + 260bps</span><span class="snap-src">GlobeSt</span></div><div class="snap-item"><a href="https://costar.com" target="_blank" class="snap-hed">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a><span class="snap-val">8.4% delinquency</span><span class="snap-src">CoStar News</span></div></div></div><div class="snap-row"><div class="snap-lbl">Pipeline</div><div class="snap-hits"><div class="snap-item"><a href="https://bisnow.com" target="_blank" class="snap-hed">Life Science Demand in Boston Seaport Rebounds</a><span class="snap-val">1.4M SF</span><span class="snap-src">Bisnow Boston</span></div><div class="snap-item"><a href="https://globest.com" target="_blank" class="snap-hed">Industrial Cap Rates Compress in Northeast Despite Headwinds</a><span class="snap-val">900,000 SF</span><span class="snap-src">GlobeSt</span></div></div></div><div class="snap-row"><div class="snap-lbl">Tenant / Lease</div><div class="snap-hits"><div class="snap-item"><a href="https://bisnow.com" target="_blank" class="snap-hed">Life Science Demand in Boston Seaport Rebounds</a><span class="snap-val">Flagship Pioneering</span><span class="snap-src">Bisnow Boston</span></div></div></div></div>
   </div>
 
+  <!-- ARCHIVE TAB -->
   <div class="tab-pane" id="tab-archive">
-    <div class="frow" style="margin-bottom:14px">
-      <span class="flabel">Archive — 3 articles</span>
-      <input class="fsearch" style="margin-left:auto" placeholder="Search archive…" id="search-arc" oninput="filterArc()">
+    <div class="frow">
+      <span style="font-size:11px;color:var(--g4);font-family:'DM Mono',monospace">10 ARTICLES IN ARCHIVE</span>
+      <input class="fsearch" placeholder="Search archive…" id="search-arc" oninput="filterArc()">
     </div>
     <div class="arc-wrap">
       <table class="arc-table">
-        <thead><tr>
-          <th>Date</th><th>Source</th><th>Headline</th><th>Market</th><th>Asset</th>
-          <th>Vacancy</th><th>Cap Rate</th><th>Rent</th><th>Deal</th><th>PDF</th><th>Sentiment</th>
-        </tr></thead>
+        <thead><tr><th>Date</th><th>Market</th><th>Headline</th><th>Summary</th><th>Sentiment</th></tr></thead>
         <tbody id="arc-tbody"><tr>
-      <td class="td-mono">2026-04-15</td>
-      <td class="td-src">Bisnow Boston</td>
-      <td><a href="https://bisnow.com" target="_blank" class="arc-link">Life Science Demand in Boston Seaport Rebounds</a></td>
-      <td>Boston</td>
-      <td>Life Science</td>
-      <td class="td-num">14.2%</td>
-      <td class="td-num">—</td>
-      <td class="td-num">$85 PSF NNN</td>
-      <td class="td-num">—</td>
-      <td>—</td>
-      <td><span class="sent-pill" style="color:#1e6e4a;background:rgba(30,110,74,0.08)">BULLISH</span></td>
-    </tr><tr>
-      <td class="td-mono">2026-04-15</td>
-      <td class="td-src">GlobeSt</td>
-      <td><a href="https://globest.com" target="_blank" class="arc-link">Industrial Cap Rates Compress in Northeast Despite Headwinds</a></td>
-      <td>Boston, Pittsburgh</td>
-      <td>Industrial</td>
-      <td class="td-num">4.8%</td>
-      <td class="td-num">5.25%</td>
-      <td class="td-num">$14.50 PSF NNN</td>
-      <td class="td-num">$62M</td>
-      <td>—</td>
-      <td><span class="sent-pill" style="color:#1e6e4a;background:rgba(30,110,74,0.08)">BULLISH</span></td>
-    </tr><tr>
-      <td class="td-mono">2026-04-15</td>
-      <td class="td-src">CoStar News</td>
-      <td><a href="https://costar.com" target="_blank" class="arc-link">CMBS Delinquency Rises as Office Loans Hit Maturity Wall</a></td>
-      <td>National</td>
-      <td>Office</td>
-      <td class="td-num">19.1%</td>
-      <td class="td-num">7.8%</td>
-      <td class="td-num">$32 PSF</td>
-      <td class="td-num">—</td>
-      <td>—</td>
-      <td><span class="sent-pill" style="color:#b53325;background:rgba(181,51,37,0.08)">BEARISH</span></td>
-    </tr></tbody>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/life-sciences/divcowest-secures-341m-refinancing-loan-for-cambridge-crossing-lab-133939" target="_blank" class="arc-link">$341M Refinancing Loan Secured For Cambridge Crossing Lab</a></td>
+  <td class="td-sum">DivcoWest secured a $341M refinancing for a life science asset at Cambridge Crossing, demonstrating strong capital markets access for lab properties. This indicates continued lender confidence in Boston's life science sector despite broader CRE headwinds.</td>
+  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/office/jpmorgan-signs-250k-sf-lease-south-station-tower-133683" target="_blank" class="arc-link">JPMorgan Signs 250K SF Lease At South Station Tower</a></td>
+  <td class="td-sum">JPMorgan committed to a 250K SF office lease at South Station Tower, signaling institutional demand for high-quality Boston office space. This major lease demonstrates flight-to-quality trends that could support Class A office but may pressure Class B alternatives.</td>
+  <td><span class="sent-pill" style="color:#2660a4;background:#eef3fb">NEUTRAL</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/deal-sheet/national-development-secures-approval-for-950k-sf-hudson-industrial-project-the-boston-deal-sheet-134100" target="_blank" class="arc-link">Large Hudson Industrial Campus Secures Approval: The Boston Deal Sheet</a></td>
+  <td class="td-sum">National Development secured approval for a 950K SF industrial campus in Hudson, adding significant supply to Boston's industrial market. This represents new development competition but also validates strong industrial demand in NRC's core market.</td>
+  <td><span class="sent-pill" style="color:#2660a4;background:#eef3fb">NEUTRAL</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/deal-sheet/leggat-mccall-lands-122m-loan-bunker-hill-redevelopment-boston-deal-sheet-133980" target="_blank" class="arc-link">Leggat McCall Lands $122M Loan For Bunker Hill Redevelopment: The Boston Deal Sheet</a></td>
+  <td class="td-sum">Leggat McCall secured $122M construction financing for Bunker Hill redevelopment, indicating lender appetite for mixed-use projects in Boston. This suggests construction debt remains available for quality sponsors and locations despite tighter credit conditions.</td>
+  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/office/fbi-office-tower-in-chelsea-sells-for-134m-133940" target="_blank" class="arc-link">FBI Office Tower In Chelsea Sells For $134M</a></td>
+  <td class="td-sum">An FBI-occupied office tower in Chelsea traded for $134M, demonstrating transaction activity for credit-tenant office assets. Government-leased properties continue to attract buyers even as traditional office struggles with vacancies.</td>
+  <td><span class="sent-pill" style="color:#2660a4;background:#eef3fb">NEUTRAL</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/office/lender-bids-95m-back-bay-office-133832" target="_blank" class="arc-link">Starwood's LNR Submits Winning $95M Bid For Back Bay Office</a></td>
+  <td class="td-sum">Starwood's LNR Partners submitted a $95M winning bid for a distressed Back Bay office, indicating opportunistic capital is targeting Boston office assets. This represents potential acquisition opportunities for NRC in distressed Class B office scenarios.</td>
+  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/multifamily/rent-control-could-cost-massachusetts-300b-property-values-study-133627" target="_blank" class="arc-link">STUDY: Rent Control Could Cost Massachusetts $300B In Lost Property Values</a></td>
+  <td class="td-sum">A study found potential rent control legislation could reduce Massachusetts property values by $300B, creating significant downside risk for multifamily assets. This represents a major regulatory threat to NRC's residential portfolio that could compress cap rates and returns.</td>
+  <td><span class="sent-pill" style="color:#b53325;background:#fdf0ee">BEARISH</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/deal-sheet/bxp-sells-downtown-boston-apartment-building-boston-deal-sheet-133474" target="_blank" class="arc-link">BXP Sells Downtown Boston Residential Building For $55M: The Boston Deal Sheet</a></td>
+  <td class="td-sum">Boston Properties sold a downtown residential building for $55M, showing continued transaction activity in Boston multifamily. Major REITs divesting residential assets may create acquisition opportunities for private equity firms like NRC.</td>
+  <td><span class="sent-pill" style="color:#2660a4;background:#eef3fb">NEUTRAL</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
+  <td><a href="https://www.bisnow.com/boston/news/deal-sheet/lightstone-acquires-rhode-island-biomanufacturing-facility-for-68m-the-boston-deal-sheet-133898" target="_blank" class="arc-link">Lightstone Acquires Rhode Island Biomanufacturing Facility For $68M: The Boston Deal Sheet</a></td>
+  <td class="td-sum">Lightstone acquired a Rhode Island biomanufacturing facility for $68M, showing institutional interest in specialized life science properties near Boston. This validates demand for industrial/life science hybrid assets in NRC's regional footprint.</td>
+  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
+</tr><tr>
+  <td class="td-date">2026-04-16</td>
+  <td><span class="mbadge" style="background:#4a4a4a">National</span></td>
+  <td><a href="https://commercialobserver.com/2026/04/wd-starwood-affordable-housing/" target="_blank" class="arc-link">W&amp;D Provides $1.7B Refi for Starwood Affordable Housing Portfolio</a></td>
+  <td class="td-sum">Walker &amp; Dunlop provided $1.7B refinancing for Starwood's 13,000-unit affordable housing portfolio, demonstrating robust debt markets for stabilized multifamily. This signals that lenders remain active for large-scale residential portfolios despite economic uncertainty.</td>
+  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
+</tr></tbody>
       </table>
     </div>
   </div>
@@ -293,29 +458,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);fo
 <script>
 function switchTab(n,btn){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tb-nav button').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+n).classList.add('on');
   btn.classList.add('on');
-}
-let activeSent='all';
-function filterSent(s,el){
-  activeSent=s;
-  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
-  applyFilters();
-}
-function applyFilters(){
-  const q=document.getElementById('search-today').value.toLowerCase();
-  document.querySelectorAll('#cards-today .acard').forEach(c=>{
-    const ok=(activeSent==='all'||c.dataset.sentiment===activeSent)&&(!q||c.innerText.toLowerCase().includes(q));
-    c.style.display=ok?'':'none';
-  });
 }
 function filterArc(){
   const q=document.getElementById('search-arc').value.toLowerCase();
   document.querySelectorAll('#arc-tbody tr').forEach(r=>{r.style.display=!q||r.innerText.toLowerCase().includes(q)?'':'none';});
 }
-function toast(msg,ms=4000){
+function toast(msg,ms=4500){
   const el=document.getElementById('toast');
   el.innerHTML=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),ms);
@@ -323,47 +474,31 @@ function toast(msg,ms=4000){
 async function rerun(){
   const GITHUB_USER='Lukemckenzie2026';
   const GITHUB_REPO='nrc-news';
-  const TOKEN='NOT_SET';
-  if(!GITHUB_USER||GITHUB_USER==='Lukemckenzie2026'||!TOKEN||TOKEN==='NOT_SET'){
-    toast('⚠ Rerun not configured.<br>Add your GitHub username, repo, and PAT to the scraper. See README.',8000);
-    return;
+  const TOKEN='PASTE_YOUR_PAT_HERE';
+  if(!TOKEN||TOKEN===''||TOKEN==='PASTE_YOUR_PAT_HERE'){
+    toast('Use Actions tab on GitHub to run manually.',5000);return;
   }
   const btn=document.getElementById('rerun-btn');
   const prog=document.getElementById('prog');
   const fill=document.getElementById('prog-fill');
-  btn.disabled=true;btn.textContent='Triggering…';
-  prog.classList.add('show');
+  btn.disabled=true;btn.textContent='Running…';prog.classList.add('show');
   try{
-    const res=await fetch(
-      `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/actions/workflows/daily.yml/dispatches`,
-      {method:'POST',headers:{'Authorization':`Bearer ${TOKEN}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({ref:'main'})}
-    );
+    const res=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/actions/workflows/daily.yml/dispatches`,
+      {method:'POST',headers:{'Authorization':`Bearer ${TOKEN}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({ref:'main'})});
     if(res.status===204){
-      let pct=5;
-      const tick=setInterval(()=>{pct=Math.min(pct+Math.random()*1.5,90);fill.style.width=pct+'%';},3000);
-      toast('✓ Workflow triggered — takes ~3–4 min. Page reloads when done.',7000);
-      await new Promise(r=>setTimeout(r,20000));
-      for(let i=0;i<40;i++){
+      let pct=5;const tick=setInterval(()=>{pct=Math.min(pct+2,90);fill.style.width=pct+'%';},3000);
+      toast('✓ Running — reloads when done (~2 min)',6000);
+      await new Promise(r=>setTimeout(r,15000));
+      for(let i=0;i<25;i++){
         await new Promise(r=>setTimeout(r,8000));
-        try{
-          const r2=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/actions/runs?per_page=1`,{headers:{'Authorization':`Bearer ${TOKEN}`,'Accept':'application/vnd.github+json'}});
-          const d=await r2.json();
-          const run=d.workflow_runs?.[0];
-          if(run&&run.status==='completed'){clearInterval(tick);fill.style.width='100%';toast('✓ Done — reloading…',2500);setTimeout(()=>location.reload(),2600);return;}
-        }catch(_){}
+        try{const r2=await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/actions/runs?per_page=1`,{headers:{'Authorization':`Bearer ${TOKEN}`,'Accept':'application/vnd.github+json'}});
+        const d=await r2.json();const run=d.workflow_runs?.[0];
+        if(run&&run.status==='completed'){clearInterval(tick);fill.style.width='100%';toast('✓ Done — reloading…',2000);setTimeout(()=>location.reload(),2100);return;}}catch(_){}
       }
-      clearInterval(tick);
-      toast('Workflow still running — reload in a few minutes.',5000);
-      btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-    }else{
-      const txt=await res.text();
-      toast(`⚠ GitHub returned ${res.status}. Check your PAT has workflow permissions.<br><small>${txt.slice(0,120)}</small>`,9000);
-      btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-    }
-  }catch(e){
-    toast('⚠ Error: '+e.message,6000);
-    btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-  }
+      clearInterval(tick);toast('Still running — reload in a minute.',4000);
+    }else{toast(`⚠ Error ${res.status} — check PAT permissions.`,6000);}
+  }catch(e){toast('⚠ '+e.message,5000);}
+  btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
 }
 </script>
 </body>
