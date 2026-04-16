@@ -9,24 +9,23 @@ NRC Market Intelligence Scraper
 import json, os, re, time, hashlib, requests
 from datetime import datetime, timezone
 from pathlib import Path
-from bs4 import BeautifulSoup
 import anthropic
 
 # ─────────────────────────────────────────────────────────────────
-# SOURCES — add/remove freely
+# NEWS SEARCH QUERIES — edit freely
+# NewsAPI fetches from Bisnow, CoStar, WSJ, Globe, Real Deal etc.
 # ─────────────────────────────────────────────────────────────────
-SOURCES = [
-    {"name": "Bisnow Boston",           "url": "https://www.bisnow.com",        "section_url": "https://www.bisnow.com/boston"},
-    {"name": "CoStar News",             "url": "https://www.costar.com",        "section_url": "https://www.costar.com/news"},
-    {"name": "The Real Deal",           "url": "https://therealdeal.com",       "section_url": "https://therealdeal.com/boston/"},
-    {"name": "GlobeSt",                 "url": "https://www.globest.com",       "section_url": "https://www.globest.com/"},
-    {"name": "Commercial Observer",     "url": "https://commercialobserver.com","section_url": "https://commercialobserver.com/"},
-    {"name": "Wall Street Journal",     "url": "https://www.wsj.com",           "section_url": "https://www.wsj.com/real-estate"},
-    {"name": "Boston Business Journal", "url": "https://www.bizjournals.com",   "section_url": "https://www.bizjournals.com/boston/real_estate"},
-    {"name": "Crain's New York",        "url": "https://www.crainsnewyork.com", "section_url": "https://www.crainsnewyork.com/real-estate"},
-    {"name": "SF Business Times",       "url": "https://www.bizjournals.com",   "section_url": "https://www.bizjournals.com/sanfrancisco/real_estate"},
-    {"name": "Boston Globe",            "url": "https://www.bostonglobe.com",   "section_url": "https://www.bostonglobe.com/business/real-estate/"},
-    {"name": "New York Times",          "url": "https://www.nytimes.com",       "section_url": "https://www.nytimes.com/section/realestate"},
+NEWS_QUERIES = [
+    "commercial real estate Boston",
+    "industrial real estate Boston Pittsburgh",
+    "life science real estate Boston",
+    "office real estate CMBS distressed 2026",
+    "cold storage real estate Northeast",
+    "multifamily residential Boston New York",
+    "real estate private equity acquisition 2026",
+    "CRE cap rate interest rate 2026",
+    "Boston real estate lease sale development",
+    "Pittsburgh California real estate 2026",
 ]
 
 # ─────────────────────────────────────────────────────────────────
@@ -76,37 +75,57 @@ From the headlines below, return this exact JSON (no markdown, no commentary):
 Pick the 10 most relevant articles ordered by relevance. Include up to 4 market_snapshot stats and up to 6 notable_transactions pulled from the headlines.
 """
 
-HEADERS      = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
 ROOT         = Path(__file__).parent.parent
 OUTPUT_FILE  = ROOT / "docs" / "index.html"
 ARCHIVE_FILE = ROOT / "docs" / "data" / "archive.json"
 
 
 # ─────────────────────────────────────────────────────────────────
-# SCRAPING
+# NEWSAPI FETCHING
 # ─────────────────────────────────────────────────────────────────
-def scrape_headlines(source):
-    try:
-        r = requests.get(source["section_url"], headers=HEADERS, timeout=15)
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, "html.parser")
-        results, seen = [], set()
-        for tag in soup.find_all("a", href=True):
-            text = tag.get_text(strip=True)
-            href = tag["href"]
-            if (30 < len(text) < 200
-                    and not any(s in href for s in ["#","javascript","mailto","login","subscribe","account","signup"])
-                    and text not in seen):
-                if href.startswith("/"): href = source["url"] + href
-                elif not href.startswith("http"): continue
-                seen.add(text)
-                results.append({"title": text, "url": href, "source": source["name"]})
-        count = min(len(results), 30)
-        print(f"  [{source['name']}] {count} headlines")
-        return results[:30]
-    except Exception as e:
-        print(f"  [{source['name']}] Error: {e}")
-        return []
+def fetch_headlines_newsapi(api_key):
+    """Fetch headlines from NewsAPI — works from GitHub Actions, no blocking."""
+    from datetime import timedelta
+    headers = {"X-Api-Key": api_key}
+    all_articles = []
+    seen_urls = set()
+    # Only fetch last 3 days
+    from_date = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
+
+    for query in NEWS_QUERIES:
+        try:
+            r = requests.get(
+                "https://newsapi.org/v2/everything",
+                params={
+                    "q": query,
+                    "language": "en",
+                    "sortBy": "publishedAt",
+                    "from": from_date,
+                    "pageSize": 20,
+                    "domains": "bisnow.com,globest.com,commercialobserver.com,therealdeal.com,costar.com,wsj.com,bizjournals.com,bostonglobe.com,nytimes.com,crainsnewyork.com,credaily.com,propmodo.com,connect.media,rebusinessonline.com,multihousingnews.com,nerej.com"
+                },
+                headers=headers,
+                timeout=15
+            )
+            if r.status_code == 200:
+                data = r.json()
+                articles = data.get("articles", [])
+                for a in articles:
+                    url = a.get("url","")
+                    title = a.get("title","") or ""
+                    source = a.get("source",{}).get("name","Unknown")
+                    if url and url not in seen_urls and len(title) > 20 and "[Removed]" not in title:
+                        seen_urls.add(url)
+                        all_articles.append({"title": title, "url": url, "source": source})
+                print(f"  [{query[:40]}] {len(articles)} articles")
+            else:
+                print(f"  [{query[:40]}] Error {r.status_code}: {r.text[:80]}")
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"  [{query[:40]}] Exception: {e}")
+
+    print(f"\nTotal unique headlines: {len(all_articles)}")
+    return all_articles
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -236,9 +255,14 @@ def generate_html(today, archive, run_date, snapshot=None, transactions=None):
   <div class="stat-note" style="color:{tc}">{ti} {esc(s.get('note',''))}</div>
 </div>"""
 
-    # ── HEADLINE ROWS ──
+    # ── HEADLINE ROWS — only show articles from today ──
+    from datetime import date
+    today_date = date.today().isoformat()
+    today_only = [a for a in today if a.get("date","") == today_date]
+    if not today_only:
+        today_only = today  # fallback to all if date mismatch
     headline_rows = ""
-    for a in today:
+    for a in today_only:
         sc = sent_color(a.get("sentiment"))
         sb = sent_bg(a.get("sentiment"))
         dp = f'<span class="data-point">{esc(a.get("data_point",""))}</span>' if a.get("data_point") else ""
@@ -318,11 +342,8 @@ body{{font-family:var(--font);background:var(--off);color:var(--navy);font-size:
 .th-date{{font-size:12px;color:var(--g4);}}
 .th-markets{{margin-left:auto;font-size:11px;color:var(--g4);}}
 .th-markets span{{margin-left:8px;}}
-.rerun-btn{{background:var(--navy);color:#fff;border:none;border-radius:4px;padding:5px 14px;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;transition:opacity .15s;margin-left:16px;}}
-.rerun-btn:hover{{opacity:.8;}}.rerun-btn:disabled{{opacity:.4;cursor:wait;}}
-.prog-wrap{{height:2px;background:var(--g1);overflow:hidden;display:none;position:fixed;top:48px;left:0;right:0;z-index:201;}}
-.prog-wrap.show{{display:block;}}
-.prog-fill{{height:100%;width:0%;background:var(--bluel);transition:width .5s ease;}}
+
+
 
 /* ── LAYOUT ── */
 .page{{max-width:1100px;margin:0 auto;padding:20px 24px;}}
@@ -422,8 +443,6 @@ body{{font-family:var(--font);background:var(--off);color:var(--navy);font-size:
 </head>
 <body>
 
-<div class="prog-wrap" id="prog"><div class="prog-fill" id="prog-fill"></div></div>
-
 <header class="top-header">
   <div class="th-logo">
     <div class="th-nrc">NRC</div>
@@ -441,7 +460,7 @@ body{{font-family:var(--font);background:var(--off);color:var(--navy);font-size:
       <button class="tab-btn on" onclick="switchTab('today',this)" style="padding:4px 12px;font-size:12px;">Today</button>
       <button class="tab-btn" onclick="switchTab('archive',this)" style="padding:4px 12px;font-size:12px;">Archive</button>
     </div>
-    <button class="rerun-btn" id="rerun-btn" onclick="rerun()">↻ Rerun</button>
+
   </div>
 </header>
 
@@ -452,9 +471,9 @@ body{{font-family:var(--font);background:var(--off);color:var(--navy);font-size:
     <!-- STAT CARDS -->
     <div class="stat-row">
       {stat_cards if stat_cards else f'''
-      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">{len(today)}</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
-      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">{bullish}</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
-      <div class="stat-card"><div class="stat-label">Bearish Signals</div><div class="stat-value" style="color:var(--redl)">{bearish}</div><div class="stat-note" style="color:var(--redl)">↓ Watch closely</div></div>
+      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">{len(today_only)}</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
+      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">{sum(1 for a in today_only if a.get('sentiment')=='bullish')}</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
+      <div class="stat-card"><div class="stat-label">Bearish Signals</div><div class="stat-value" style="color:var(--redl)">{sum(1 for a in today_only if a.get('sentiment')=='bearish')}</div><div class="stat-note" style="color:var(--redl)">↓ Watch closely</div></div>
       <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">{len(archive)}</div><div class="stat-note" style="color:var(--g4)">All time</div></div>'''}
     </div>
 
@@ -527,35 +546,7 @@ function toast(msg,ms=4500){{
   el.innerHTML=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),ms);
 }}
-async function rerun(){{
-  const GITHUB_USER='Lukemckenzie2026';
-  const GITHUB_REPO='nrc-news';
-  const TOKEN='PASTE_YOUR_PAT_HERE';
-  if(!TOKEN||TOKEN===''||TOKEN==='PASTE_YOUR_PAT_HERE'){{
-    toast('Use Actions tab on GitHub to run manually.',5000);return;
-  }}
-  const btn=document.getElementById('rerun-btn');
-  const prog=document.getElementById('prog');
-  const fill=document.getElementById('prog-fill');
-  btn.disabled=true;btn.textContent='Running…';prog.classList.add('show');
-  try{{
-    const res=await fetch(`https://api.github.com/repos/${{GITHUB_USER}}/${{GITHUB_REPO}}/actions/workflows/daily.yml/dispatches`,
-      {{method:'POST',headers:{{'Authorization':`Bearer ${{TOKEN}}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'}},body:JSON.stringify({{ref:'main'}})}});
-    if(res.status===204){{
-      let pct=5;const tick=setInterval(()=>{{pct=Math.min(pct+2,90);fill.style.width=pct+'%';}},3000);
-      toast('✓ Running — reloads when done (~2 min)',6000);
-      await new Promise(r=>setTimeout(r,15000));
-      for(let i=0;i<25;i++){{
-        await new Promise(r=>setTimeout(r,8000));
-        try{{const r2=await fetch(`https://api.github.com/repos/${{GITHUB_USER}}/${{GITHUB_REPO}}/actions/runs?per_page=1`,{{headers:{{'Authorization':`Bearer ${{TOKEN}}`,'Accept':'application/vnd.github+json'}}}});
-        const d=await r2.json();const run=d.workflow_runs?.[0];
-        if(run&&run.status==='completed'){{clearInterval(tick);fill.style.width='100%';toast('✓ Done — reloading…',2000);setTimeout(()=>location.reload(),2100);return;}}}}catch(_){{}}
-      }}
-      clearInterval(tick);toast('Still running — reload in a minute.',4000);
-    }}else{{toast(`⚠ Error ${{res.status}} — check PAT permissions.`,6000);}}
-  }}catch(e){{toast('⚠ '+e.message,5000);}}
-  btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-}}
+
 </script>
 </body>
 </html>"""
@@ -569,14 +560,11 @@ def main():
     print(f"\n{'='*55}\nNRC Scraper — {today_str}\n{'='*55}\n")
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    news_api_key = os.environ["NEWS_API_KEY"]
 
-    # 1. Scrape headlines
-    all_headlines = []
-    for source in SOURCES:
-        print(f"Scraping: {source['name']}")
-        all_headlines.extend(scrape_headlines(source))
-        time.sleep(0.5)
-    print(f"\nTotal headlines: {len(all_headlines)}")
+    # 1. Fetch headlines via NewsAPI (works from GitHub Actions)
+    print("Fetching headlines via NewsAPI...")
+    all_headlines = fetch_headlines_newsapi(news_api_key)
 
     # 2. Single Claude call — rank, summarize, extract data
     print("\nRanking with Claude…")
@@ -589,14 +577,14 @@ def main():
 
     # 4. Archive — keep only last 3 days of articles
     from datetime import timedelta
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
     archive = load_archive()
     archive = [a for a in archive if a.get("date","") >= cutoff]
     existing = {a["url"] for a in archive}
     new_arts = [a for a in enriched if a["url"] not in existing]
     full_archive = new_arts + archive
     save_archive(full_archive)
-    print(f"  {len(new_arts)} new → {len(full_archive)} total in archive (last 3 days)")
+    print(f"  {len(new_arts)} new → {len(full_archive)} total in archive (last 30 days)")
 
     # 5. Generate dashboard
     print("\nGenerating dashboard…")
