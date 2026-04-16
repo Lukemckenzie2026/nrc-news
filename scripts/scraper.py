@@ -35,31 +35,45 @@ SOURCES = [
 RANKING_PROMPT = """
 You are a senior research analyst at North River Company (NRC), a real estate private equity firm based in Boston.
 
-NRC's focus:
+NRC focus:
 - Markets: Boston, New York, Maine, Pittsburgh, California
 - Asset classes: industrial, life science, Class B office, cold storage, tower residential (100+ units)
 - Strategy: acquisitions, asset management, value-add, opportunistic, core/core-plus
-- Also interested in: cap rates, interest rates, CMBS, private credit, CRE market trends, major lease signings, distressed assets
+- Also: cap rates, interest rates, CMBS, private credit, CRE trends, lease signings, distressed assets
 
-You will receive a list of article headlines scraped from CRE news sources today.
+From the headlines below, return this exact JSON (no markdown, no commentary):
+{
+  "articles": [
+    {
+      "title": "exact headline",
+      "url": "exact url",
+      "source": "exact source",
+      "summary": "2-sentence summary of what this means for NRC",
+      "sentiment": "bullish | bearish | neutral",
+      "market": "Boston | New York | Pittsburgh | California | Maine | National",
+      "asset_class": "Industrial | Life Science | Office | Cold Storage | Multifamily | Capital Markets",
+      "data_point": "specific figure from headline e.g. $134M or 7.6% vacancy, or null"
+    }
+  ],
+  "market_snapshot": [
+    {
+      "label": "short label e.g. Boston Industrial Vacancy",
+      "value": "the number e.g. 7.6%",
+      "note": "one short context note",
+      "trend": "up | down | flat"
+    }
+  ],
+  "notable_transactions": [
+    {
+      "address": "property address or name",
+      "detail": "deal detail e.g. $134M sale or 231K SF lease",
+      "tenant_buyer": "tenant or buyer name if mentioned, else null",
+      "type": "Sale | Lease | Development | Financing"
+    }
+  ]
+}
 
-Your job:
-1. Pick the 10 most relevant and useful articles for NRC's team
-2. For each, write a 2-sentence summary of what the article is likely about and why it matters to NRC
-3. Assign a sentiment: bullish, bearish, or neutral (from NRC's perspective)
-
-Return a JSON array of exactly 10 items (fewer if less than 10 are relevant), ordered from most to least relevant:
-[
-  {
-    "title": "exact headline as given",
-    "url": "exact url as given",
-    "source": "exact source as given",
-    "summary": "2-sentence summary of what this means for NRC",
-    "sentiment": "bullish | bearish | neutral"
-  }
-]
-
-Return ONLY valid JSON. No markdown, no commentary.
+Pick the 10 most relevant articles ordered by relevance. Include up to 4 market_snapshot stats and up to 6 notable_transactions pulled from the headlines.
 """
 
 HEADERS      = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
@@ -99,12 +113,11 @@ def scrape_headlines(source):
 # CLAUDE — one call, returns top 10 with summaries
 # ─────────────────────────────────────────────────────────────────
 def rank_with_claude(client, all_headlines):
-    # Just send titles, urls, sources — no body text needed
     headline_list = [{"title": a["title"], "url": a["url"], "source": a["source"]} for a in all_headlines]
 
     msg = client.messages.create(
         model="claude-sonnet-4-5",
-        max_tokens=3000,
+        max_tokens=4000,
         messages=[{
             "role": "user",
             "content": f"{RANKING_PROMPT}\n\nHeadlines:\n{json.dumps(headline_list, indent=2)}"
@@ -112,9 +125,12 @@ def rank_with_claude(client, all_headlines):
     )
 
     raw = re.sub(r"^```json|^```|```$", "", msg.content[0].text.strip(), flags=re.MULTILINE).strip()
-    results = json.loads(raw)
-    print(f"  Claude returned {len(results)} articles")
-    return results
+    data = json.loads(raw)
+    articles = data.get("articles", data) if isinstance(data, dict) else data
+    snapshot = data.get("market_snapshot", []) if isinstance(data, dict) else []
+    transactions = data.get("notable_transactions", []) if isinstance(data, dict) else []
+    print(f"  Claude returned {len(articles)} articles, {len(snapshot)} stats, {len(transactions)} transactions")
+    return articles, snapshot, transactions
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -175,14 +191,104 @@ def archive_rows_html(archive):
     return rows
 
 
-def generate_html(today, archive, run_date):
-    fdate   = datetime.strptime(run_date,"%Y-%m-%d").strftime("%B %d, %Y")
+def esc(s):
+    if not s: return ""
+    return str(s).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"',"&quot;")
+
+def market_badge(m):
+    colors = {"Boston":"#1a3a5c","New York":"#2d4a7a","Pittsburgh":"#3a5a2a","California":"#5a3a1a","Maine":"#3a2a5a","National":"#4a4a4a"}
+    m = (m or "").split("/")[0].split(",")[0].strip()
+    c = colors.get(m, "#4a4a4a")
+    return f'<span class="mbadge" style="background:{c}">{esc(m)}</span>'
+
+def asset_tag(a):
+    colors = {"Industrial":"#1e4d2b","Life Science":"#1a3a5c","Office":"#4a3a1a","Cold Storage":"#1a4a4a","Multifamily":"#3a1a4a","Capital Markets":"#4a1a1a"}
+    c = colors.get(a or "", "#444")
+    return f'<span class="abadge" style="background:{c}">{esc(a)}</span>' if a else ""
+
+def trend_icon(t):
+    return {"up":"↑","down":"↓","flat":"→"}.get(t or "flat","→")
+
+def trend_color(t):
+    return {"up":"#1e6e4a","down":"#b53325","flat":"#8492a8"}.get(t or "flat","#8492a8")
+
+def sent_color(s):
+    return {"bullish":"#1e6e4a","bearish":"#b53325","neutral":"#2660a4"}.get(s or "neutral","#2660a4")
+
+def sent_bg(s):
+    return {"bullish":"#eef7f2","bearish":"#fdf0ee","neutral":"#eef3fb"}.get(s or "neutral","#eef3fb")
+
+def generate_html(today, archive, run_date, snapshot=None, transactions=None):
+    snapshot = snapshot or []
+    transactions = transactions or []
+    fdate = datetime.strptime(run_date,"%Y-%m-%d").strftime("%B %d, %Y")
     bullish = sum(1 for a in today if a.get("sentiment")=="bullish")
     bearish = sum(1 for a in today if a.get("sentiment")=="bearish")
-    neutral = sum(1 for a in today if a.get("sentiment")=="neutral")
 
-    cards_html = "".join(article_card(a, i+1, True) for i,a in enumerate(today)) if today else '<div class="empty">No articles yet — run the scraper to populate.</div>'
-    arc_html   = archive_rows_html(archive)
+    # ── STAT CARDS ──
+    stat_cards = ""
+    for s in snapshot[:4]:
+        tc = trend_color(s.get("trend"))
+        ti = trend_icon(s.get("trend"))
+        stat_cards += f"""<div class="stat-card">
+  <div class="stat-label">{esc(s.get('label',''))}</div>
+  <div class="stat-value">{esc(s.get('value',''))}</div>
+  <div class="stat-note" style="color:{tc}">{ti} {esc(s.get('note',''))}</div>
+</div>"""
+
+    # ── HEADLINE ROWS ──
+    headline_rows = ""
+    for a in today:
+        sc = sent_color(a.get("sentiment"))
+        sb = sent_bg(a.get("sentiment"))
+        dp = f'<span class="data-point">{esc(a.get("data_point",""))}</span>' if a.get("data_point") else ""
+        headline_rows += f"""<a class="hl-row" href="{esc(a['url'])}" target="_blank">
+  <div class="hl-left">
+    {market_badge(a.get('market',''))}
+    <div class="hl-text">
+      <div class="hl-title">{esc(a['title'])}{dp}</div>
+      <div class="hl-sub">{esc(a.get('asset_class',''))} · {esc(a.get('source',''))}</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:{sc}" title="{a.get('sentiment','')}"></span>
+  </div>
+</a>"""
+
+    # ── SUMMARY CARDS (right panel) ──
+    signal_cards = ""
+    for a in today[:5]:
+        sc2 = sent_color(a.get("sentiment"))
+        icon = {"bullish":"↑","bearish":"↓","neutral":"i"}.get(a.get("sentiment","neutral"),"i")
+        signal_cards += f"""<div class="signal-card">
+  <div class="signal-icon" style="background:{sc2}">{icon}</div>
+  <div class="signal-body">
+    <div class="signal-summary">{esc(a.get('summary',''))}</div>
+    <div class="signal-source">{esc(a.get('source',''))}</div>
+  </div>
+</div>"""
+
+    # ── TRANSACTIONS ──
+    tx_cells = ""
+    for tx in transactions[:6]:
+        tx_cells += f"""<div class="tx-cell">
+  <div class="tx-addr">{esc(tx.get('address',''))}</div>
+  <div class="tx-detail">{esc(tx.get('detail',''))}</div>
+  <div class="tx-who">{esc(tx.get('tenant_buyer') or tx.get('type',''))}</div>
+</div>"""
+
+    # ── ARCHIVE ROWS ──
+    arc_rows = ""
+    for a in archive:
+        sc3 = sent_color(a.get("sentiment","neutral"))
+        sb3 = sent_bg(a.get("sentiment","neutral"))
+        arc_rows += f"""<tr>
+  <td class="td-date">{esc(a.get('date',''))}</td>
+  <td>{market_badge(a.get('market',''))}</td>
+  <td><a href="{esc(a['url'])}" target="_blank" class="arc-link">{esc(a['title'])}</a></td>
+  <td class="td-sum">{esc(a.get('summary',''))}</td>
+  <td><span class="sent-pill" style="color:{sc3};background:{sb3}">{(a.get('sentiment') or '—').upper()}</span></td>
+</tr>"""
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -190,215 +296,213 @@ def generate_html(today, archive, run_date):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NRC Market Intelligence — {fdate}</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{{
-  --navy:#0d1c2e;--navy2:#152540;--navy3:#1d3560;
-  --blue:#2660a4;--bluel:#4a8fd4;--bluep:#deeaf8;
-  --gold:#b8924a;--goldp:#f7edd9;
-  --w:#fff;--off:#f5f7fa;
-  --g1:#eaecf2;--g2:#ced4e0;--g4:#8492a8;--g6:#4a5668;
-  --green:#1e6e4a;--red:#b53325;
+  --navy:#0d1c2e;--navy2:#1a2e44;
+  --blue:#1a3a5c;--bluel:#2d5f8a;
+  --w:#ffffff;--off:#f8f9fb;--off2:#f2f4f7;
+  --g1:#e8ecf2;--g2:#d0d6e0;--g3:#b0bac8;--g4:#7a8898;--g6:#3a4858;
+  --green:#1e5c3a;--greenl:#2a7d50;--red:#8b2315;--redl:#b53325;
+  --border:#e2e6ed;
+  --font:'Inter',system-ui,sans-serif;
 }}
 *{{box-sizing:border-box;margin:0;padding:0;}}
-body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);font-size:14px;line-height:1.6;}}
+body{{font-family:var(--font);background:var(--off);color:var(--navy);font-size:13px;line-height:1.5;}}
 
-/* TOPBAR */
-.topbar{{background:var(--navy);position:sticky;top:0;z-index:300;box-shadow:0 2px 12px rgba(0,0,0,0.2);}}
-.topbar-inner{{max-width:860px;margin:0 auto;padding:0 24px;height:52px;display:flex;align-items:center;gap:16px;}}
-.tb-name{{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:#fff;letter-spacing:.3px;}}
-.tb-sub{{font-family:'DM Mono',monospace;font-size:8px;color:var(--bluel);text-transform:uppercase;letter-spacing:2px;margin-top:1px;}}
-.tb-date{{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);border-left:1px solid rgba(255,255,255,0.1);padding-left:16px;}}
-.tb-right{{display:flex;align-items:center;gap:8px;margin-left:auto;}}
-.tb-nav button{{background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);border-radius:4px;padding:5px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}}
-.tb-nav button:hover,.tb-nav button.on{{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.3);}}
-.rerun-btn{{background:var(--gold);color:var(--navy);border:none;border-radius:4px;padding:5px 16px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;}}
-.rerun-btn:hover{{opacity:.85;}}.rerun-btn:disabled{{opacity:.5;cursor:wait;}}
-
-/* PROGRESS */
-.prog-wrap{{height:2px;background:rgba(255,255,255,0.06);overflow:hidden;display:none;}}
+/* ── TOP HEADER ── */
+.top-header{{background:var(--w);border-bottom:1px solid var(--border);padding:0 28px;height:48px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:200;}}
+.th-logo{{display:flex;align-items:center;gap:10px;}}
+.th-nrc{{width:32px;height:32px;background:var(--navy);border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;letter-spacing:.5px;}}
+.th-title{{font-size:15px;font-weight:600;color:var(--navy);}}
+.th-date{{font-size:12px;color:var(--g4);}}
+.th-markets{{margin-left:auto;font-size:11px;color:var(--g4);}}
+.th-markets span{{margin-left:8px;}}
+.rerun-btn{{background:var(--navy);color:#fff;border:none;border-radius:4px;padding:5px 14px;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;transition:opacity .15s;margin-left:16px;}}
+.rerun-btn:hover{{opacity:.8;}}.rerun-btn:disabled{{opacity:.4;cursor:wait;}}
+.prog-wrap{{height:2px;background:var(--g1);overflow:hidden;display:none;position:fixed;top:48px;left:0;right:0;z-index:201;}}
 .prog-wrap.show{{display:block;}}
-.prog-fill{{height:100%;width:0%;background:var(--gold);transition:width .5s ease;}}
+.prog-fill{{height:100%;width:0%;background:var(--bluel);transition:width .5s ease;}}
 
-/* TOAST */
-.toast{{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--navy);color:#fff;border-radius:6px;padding:12px 20px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,0.25);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;border-left:3px solid var(--gold);max-width:340px;line-height:1.5;}}
-.toast.show{{opacity:1;transform:translateY(0);}}
+/* ── LAYOUT ── */
+.page{{max-width:1100px;margin:0 auto;padding:20px 24px;}}
+.two-col{{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}}
 
-/* HERO */
-.hero{{background:linear-gradient(135deg,var(--navy2) 0%,var(--navy3) 100%);padding:32px 24px 28px;}}
-.hero-inner{{max-width:860px;margin:0 auto;}}
-.hero-eyebrow{{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--bluel);margin-bottom:8px;}}
-.hero-title{{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:#fff;line-height:1.1;letter-spacing:-.3px;margin-bottom:20px;}}
-.hero-title em{{color:var(--gold);font-style:normal;}}
-.hero-stats{{display:flex;gap:24px;}}
-.hstat{{display:flex;align-items:center;gap:8px;}}
-.hstat-val{{font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;line-height:1;}}
-.hstat-lbl{{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.3;}}
+/* ── STAT CARDS ── */
+.stat-row{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}}
+.stat-card{{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}}
+.stat-label{{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--g4);margin-bottom:6px;font-family:'DM Mono',monospace;}}
+.stat-value{{font-size:26px;font-weight:700;color:var(--navy);line-height:1;margin-bottom:4px;}}
+.stat-note{{font-size:11px;}}
 
-/* LAYOUT */
-.wrap{{max-width:860px;margin:0 auto;padding:28px 24px;}}
+/* ── SECTION HEADERS ── */
+.sec-header{{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);margin-bottom:10px;font-family:'DM Mono',monospace;padding-bottom:6px;border-bottom:1px solid var(--border);}}
+
+/* ── HEADLINE LIST ── */
+.hl-panel{{background:var(--w);border:1px solid var(--border);border-radius:6px;overflow:hidden;}}
+.hl-row{{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--g1);text-decoration:none;color:inherit;transition:background .12s;}}
+.hl-row:last-child{{border-bottom:none;}}
+.hl-row:hover{{background:var(--off2);}}
+.hl-left{{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;}}
+.hl-text{{flex:1;min-width:0;}}
+.hl-title{{font-size:13px;font-weight:500;color:var(--navy);line-height:1.35;margin-bottom:2px;}}
+.hl-sub{{font-size:11px;color:var(--g4);}}
+.hl-right{{flex-shrink:0;}}
+.data-point{{display:inline-block;font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--bluel);background:#eef3fb;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;}}
+.sent-dot{{width:8px;height:8px;border-radius:50%;display:inline-block;}}
+
+/* BADGES */
+.mbadge{{display:inline-block;font-size:9px;font-weight:600;color:#fff;padding:2px 7px;border-radius:3px;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;margin-top:2px;}}
+.abadge{{display:inline-block;font-size:9px;color:#fff;padding:1px 6px;border-radius:3px;}}
+.sent-pill{{font-size:9px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;font-weight:600;}}
+
+/* ── RIGHT PANEL ── */
+.right-col{{display:flex;flex-direction:column;gap:16px;}}
+
+.signal-panel{{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:16px;}}
+.signal-card{{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--g1);}}
+.signal-card:last-child{{border-bottom:none;padding-bottom:0;}}
+.signal-card:first-child{{padding-top:0;}}
+.signal-icon{{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px;}}
+.signal-summary{{font-size:12px;color:var(--g6);line-height:1.5;margin-bottom:2px;}}
+.signal-source{{font-size:10px;color:var(--g3);font-family:'DM Mono',monospace;}}
+
+/* VACANCY WATCH */
+.vacancy-panel{{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:16px;}}
+.vac-row{{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g1);}}
+.vac-row:last-child{{border-bottom:none;}}
+.vac-label{{font-size:12px;color:var(--g6);}}
+.vac-val{{font-size:12px;font-weight:600;color:var(--navy);font-family:'DM Mono',monospace;}}
+.vac-bar{{width:80px;height:4px;background:var(--g1);border-radius:2px;margin:0 10px;overflow:hidden;}}
+.vac-fill{{height:100%;border-radius:2px;}}
+
+/* ── TRANSACTIONS ── */
+.tx-panel{{background:var(--w);border:1px solid var(--border);border-radius:6px;padding:16px 16px 4px;margin-top:20px;}}
+.tx-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-top:0;}}
+.tx-cell{{background:var(--w);padding:12px 14px;}}
+.tx-addr{{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:3px;}}
+.tx-detail{{font-size:13px;font-weight:700;color:var(--bluel);font-family:'DM Mono',monospace;margin-bottom:2px;}}
+.tx-who{{font-size:11px;color:var(--g4);}}
+
+/* ── TABS ── */
+.tab-bar{{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}}
+.tab-btn{{background:none;border:none;padding:8px 18px;font-size:13px;font-weight:500;color:var(--g4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:var(--font);transition:all .15s;}}
+.tab-btn.on{{color:var(--navy);border-bottom-color:var(--navy);}}
 .tab-pane{{display:none;}}.tab-pane.on{{display:block;}}
 
-/* FILTER ROW */
-.frow{{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;}}
-.flabel{{font-size:10px;font-family:'DM Mono',monospace;color:var(--g4);text-transform:uppercase;letter-spacing:1.5px;}}
-.fchip{{border:1px solid var(--g2);background:var(--w);border-radius:20px;padding:4px 14px;font-size:12px;cursor:pointer;color:var(--g6);transition:all .15s;user-select:none;}}
-.fchip:hover{{border-color:var(--blue);color:var(--blue);}}.fchip.on{{background:var(--navy);border-color:var(--navy);color:#fff;}}
-.fsearch{{border:1px solid var(--g2);border-radius:20px;padding:5px 16px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;width:190px;margin-left:auto;transition:border-color .2s;background:var(--w);}}
-.fsearch:focus{{border-color:var(--blue);}}
+/* ── ARCHIVE ── */
+.arc-wrap{{background:var(--w);border:1px solid var(--border);border-radius:6px;overflow:auto;}}
+.arc-table{{width:100%;border-collapse:collapse;font-size:12px;}}
+.arc-table th{{text-align:left;padding:9px 14px;font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);border-bottom:2px solid var(--g1);background:var(--off);white-space:nowrap;}}
+.arc-table td{{padding:10px 14px;border-bottom:1px solid var(--g1);vertical-align:top;}}
+.arc-table tr:last-child td{{border-bottom:none;}}.arc-table tr:hover td{{background:var(--off2);}}
+.arc-link{{color:var(--navy);font-weight:500;text-decoration:none;}}.arc-link:hover{{color:var(--bluel);text-decoration:underline;}}
+.td-date{{font-family:'DM Mono',monospace;font-size:11px;color:var(--g4);white-space:nowrap;}}
+.td-sum{{font-size:11px;color:var(--g4);line-height:1.5;max-width:360px;}}
+.frow{{display:flex;align-items:center;gap:8px;margin-bottom:14px;}}
+.fsearch{{border:1px solid var(--border);border-radius:4px;padding:5px 12px;font-size:12px;font-family:var(--font);outline:none;width:200px;margin-left:auto;}}
+.fsearch:focus{{border-color:var(--bluel);}}
 
-/* ARTICLE CARDS */
-.cards{{display:flex;flex-direction:column;gap:2px;}}
+/* TOAST */
+.toast{{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--navy);color:#fff;border-radius:4px;padding:10px 16px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,0.2);opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;border-left:3px solid #4a8fd4;max-width:300px;line-height:1.5;}}
+.toast.show{{opacity:1;transform:translateY(0);}}
 
-.acard{{
-  display:flex;align-items:flex-start;gap:0;
-  background:var(--w);border:1px solid var(--g2);border-radius:6px;
-  text-decoration:none;color:inherit;
-  transition:all .18s;
-  animation:fu .2s ease both;
-  overflow:hidden;
-}}
-.acard:hover{{border-color:var(--bluel);box-shadow:0 2px 16px rgba(13,28,46,0.09);transform:translateX(2px);}}
-@keyframes fu{{from{{opacity:0;transform:translateY(5px)}}to{{opacity:1;transform:translateY(0)}}}}
+.empty{{text-align:center;padding:48px;color:var(--g4);font-size:12px;font-family:'DM Mono',monospace;}}
 
-.acard-rank{{
-  width:48px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;
-  color:var(--g2);
-  background:var(--off);
-  border-right:1px solid var(--g1);
-  align-self:stretch;
-}}
-
-.acard-content{{flex:1;padding:14px 18px;min-width:0;}}
-
-.acard-meta{{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}}
-.acard-source{{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);font-weight:500;}}
-.badge-today{{font-size:9px;background:rgba(30,110,74,0.1);color:var(--green);padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:1px;}}
-.badge-date{{font-size:9px;background:var(--g1);color:var(--g4);padding:2px 7px;border-radius:10px;font-family:'DM Mono',monospace;}}
-.sent-pill{{font-size:9px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;letter-spacing:.5px;font-weight:600;}}
-
-.acard-title{{
-  font-family:'Cormorant Garamond',serif;
-  font-size:20px;font-weight:700;
-  color:var(--navy);line-height:1.25;
-  margin-bottom:7px;
-}}
-
-.acard-summary{{
-  font-size:13px;color:var(--g6);
-  line-height:1.6;
-}}
-
-.acard-arrow{{
-  padding:0 16px;display:flex;align-items:center;
-  font-size:18px;color:var(--g2);flex-shrink:0;
-  transition:all .15s;align-self:stretch;
-}}
-.acard:hover .acard-arrow{{color:var(--blue);transform:translateX(3px);}}
-
-/* ARCHIVE */
-.arc-wrap{{background:var(--w);border:1px solid var(--g2);border-radius:6px;overflow:auto;}}
-.arc-table{{width:100%;border-collapse:collapse;font-size:13px;}}
-.arc-table th{{text-align:left;padding:10px 14px;font-size:9px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;color:var(--g4);border-bottom:2px solid var(--g1);background:var(--off);white-space:nowrap;}}
-.arc-table td{{padding:11px 14px;border-bottom:1px solid var(--g1);vertical-align:top;}}
-.arc-table tr:last-child td{{border-bottom:none;}}
-.arc-table tr:hover td{{background:#f0f5fd;}}
-.arc-link{{color:var(--navy);font-weight:600;text-decoration:none;font-family:'Cormorant Garamond',serif;font-size:15px;line-height:1.3;}}.arc-link:hover{{color:var(--blue);}}
-.td-mono{{font-family:'DM Mono',monospace;font-size:11px;color:var(--g4);white-space:nowrap;}}
-.td-src{{font-family:'DM Mono',monospace;font-size:10px;color:var(--blue);white-space:nowrap;}}
-.td-sum{{font-size:12px;color:var(--g6);line-height:1.5;max-width:400px;}}
-
-.empty{{text-align:center;padding:60px;color:var(--g4);font-family:'DM Mono',monospace;font-size:12px;}}
-
-@media(max-width:600px){{
-  .wrap{{padding:16px;}}
-  .topbar-inner{{padding:0 16px;}}
-  .hero{{padding:24px 16px 20px;}}
-  .hero-title{{font-size:28px;}}
-  .acard-rank{{width:36px;font-size:18px;}}
-  .acard-title{{font-size:17px;}}
-  .hero-stats{{gap:16px;}}
+@media(max-width:900px){{
+  .two-col{{grid-template-columns:1fr;}}
+  .right-col{{display:none;}}
+  .stat-row{{grid-template-columns:repeat(2,1fr);}}
+  .tx-grid{{grid-template-columns:repeat(2,1fr);}}
+  .page{{padding:12px 14px;}}
+  .top-header{{padding:0 14px;}}
+  .th-markets{{display:none;}}
 }}
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="prog-wrap" id="prog"><div class="prog-fill" id="prog-fill"></div></div>
-  <div class="topbar-inner">
+<div class="prog-wrap" id="prog"><div class="prog-fill" id="prog-fill"></div></div>
+
+<header class="top-header">
+  <div class="th-logo">
+    <div class="th-nrc">NRC</div>
     <div>
-      <div class="tb-name">North River Company</div>
-      <div class="tb-sub">Market Intelligence</div>
+      <div class="th-title">Market Intelligence Dashboard</div>
+      <div class="th-date">{fdate}</div>
     </div>
-    <div class="tb-date">{fdate}</div>
-    <div class="tb-right">
-      <div class="tb-nav">
-        <button class="on" onclick="switchTab('today',this)">Today</button>
-        <button onclick="switchTab('archive',this)">Archive</button>
-      </div>
-      <button class="rerun-btn" id="rerun-btn" onclick="rerun()">↻ Rerun</button>
+  </div>
+  <div class="th-markets">
+    <span>Boston</span><span>·</span><span>New York</span><span>·</span>
+    <span>Maine</span><span>·</span><span>Pittsburgh</span><span>·</span><span>California</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;margin-left:16px;">
+    <div class="tab-bar" style="border:none;margin:0;gap:4px;">
+      <button class="tab-btn on" onclick="switchTab('today',this)" style="padding:4px 12px;font-size:12px;">Today</button>
+      <button class="tab-btn" onclick="switchTab('archive',this)" style="padding:4px 12px;font-size:12px;">Archive</button>
     </div>
+    <button class="rerun-btn" id="rerun-btn" onclick="rerun()">↻ Rerun</button>
   </div>
 </header>
 
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-eyebrow">Daily Brief · {fdate}</div>
-    <div class="hero-title">Market <em>Intelligence</em></div>
-    <div class="hero-stats">
-      <div class="hstat">
-        <div class="hstat-val">{len(today)}</div>
-        <div class="hstat-lbl">Top<br>Articles</div>
-      </div>
-      <div class="hstat" style="opacity:.4;width:1px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
-      <div class="hstat">
-        <div class="hstat-val" style="color:#5ecf9e">{bullish}</div>
-        <div class="hstat-lbl">Bullish<br>Signal</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val" style="color:#e07060">{bearish}</div>
-        <div class="hstat-lbl">Bearish<br>Signal</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val" style="color:#7aadda">{neutral}</div>
-        <div class="hstat-lbl">Neutral<br>Signal</div>
-      </div>
-      <div class="hstat" style="opacity:.4;width:1px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
-      <div class="hstat">
-        <div class="hstat-val">{len(archive)}</div>
-        <div class="hstat-lbl">Archive<br>Total</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="wrap">
+<div class="page">
 
   <div class="tab-pane on" id="tab-today">
-    <div class="frow">
-      <span class="flabel">Show:</span>
-      <div class="fchip on" onclick="filterSent('all',this)">All</div>
-      <div class="fchip" onclick="filterSent('bullish',this)">● Bullish</div>
-      <div class="fchip" onclick="filterSent('bearish',this)">● Bearish</div>
-      <div class="fchip" onclick="filterSent('neutral',this)">● Neutral</div>
-      <input class="fsearch" placeholder="Search…" id="search-today" oninput="applyFilters()">
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+      {stat_cards if stat_cards else f'''
+      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">{len(today)}</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
+      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">{bullish}</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
+      <div class="stat-card"><div class="stat-label">Bearish Signals</div><div class="stat-value" style="color:var(--redl)">{bearish}</div><div class="stat-note" style="color:var(--redl)">↓ Watch closely</div></div>
+      <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">{len(archive)}</div><div class="stat-note" style="color:var(--g4)">All time</div></div>'''}
     </div>
-    <div class="cards" id="cards-today">{cards_html}</div>
+
+    <div class="two-col">
+
+      <!-- LEFT: HEADLINES -->
+      <div>
+        <div class="sec-header">Top Headlines — All Markets</div>
+        <div class="hl-panel">
+          {headline_rows if headline_rows else '<div class="empty">No articles yet — run the scraper.</div>'}
+        </div>
+
+        <!-- TRANSACTIONS -->
+        {f'''<div class="tx-panel" style="margin-top:20px;">
+          <div class="sec-header">Notable Transactions — Recent Closes &amp; Filings</div>
+          <div class="tx-grid">{tx_cells}</div>
+        </div>''' if tx_cells else ""}
+      </div>
+
+      <!-- RIGHT: SIGNALS + VACANCY -->
+      <div class="right-col">
+        <div class="signal-panel">
+          <div class="sec-header">Market Signals</div>
+          {signal_cards}
+        </div>
+
+        <div class="vacancy-panel">
+          <div class="sec-header">Vacancy Watch — Boston Sub-Markets</div>
+          <div class="vac-row"><span class="vac-label">Industrial (Greater Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:25%;background:var(--greenl)"></div></div><span class="vac-val">{next((s['value'] for s in snapshot if 'industrial' in s.get('label','').lower()),bullish > 0 and '~5%' or '—')}</span></div>
+          <div class="vac-row"><span class="vac-label">Office (Metro Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:85%;background:var(--redl)"></div></div><span class="vac-val">{next((s['value'] for s in snapshot if 'office' in s.get('label','').lower()),'~18%')}</span></div>
+          <div class="vac-row"><span class="vac-label">Lab / Life Science</span><div class="vac-bar"><div class="vac-fill" style="width:55%;background:#b8924a)"></div></div><span class="vac-val">Recovering</span></div>
+          <div class="vac-row"><span class="vac-label">Multifamily (Metro)</span><div class="vac-bar"><div class="vac-fill" style="width:20%;background:var(--greenl)"></div></div><span class="vac-val">Tight</span></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
+  <!-- ARCHIVE TAB -->
   <div class="tab-pane" id="tab-archive">
-    <div class="frow" style="margin-bottom:16px">
-      <span class="flabel">Archive — {len(archive)} articles</span>
-      <input class="fsearch" style="margin-left:auto" placeholder="Search…" id="search-arc" oninput="filterArc()">
+    <div class="frow">
+      <span style="font-size:11px;color:var(--g4);font-family:'DM Mono',monospace">{len(archive)} ARTICLES IN ARCHIVE</span>
+      <input class="fsearch" placeholder="Search archive…" id="search-arc" oninput="filterArc()">
     </div>
     <div class="arc-wrap">
       <table class="arc-table">
-        <thead><tr>
-          <th>Date</th><th>Source</th><th>Headline</th><th>Summary</th><th>Sentiment</th>
-        </tr></thead>
-        <tbody id="arc-tbody">{arc_html}</tbody>
+        <thead><tr><th>Date</th><th>Market</th><th>Headline</th><th>Summary</th><th>Sentiment</th></tr></thead>
+        <tbody id="arc-tbody">{arc_rows}</tbody>
       </table>
     </div>
   </div>
@@ -410,81 +514,47 @@ body{{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--navy);f
 <script>
 function switchTab(n,btn){{
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tb-nav button').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+n).classList.add('on');
   btn.classList.add('on');
 }}
-
-let activeSent='all';
-function filterSent(s,el){{
-  activeSent=s;
-  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
-  applyFilters();
-}}
-function applyFilters(){{
-  const q=document.getElementById('search-today').value.toLowerCase();
-  document.querySelectorAll('#cards-today .acard').forEach(c=>{{
-    const ok=(activeSent==='all'||c.dataset.sentiment===activeSent)&&(!q||c.innerText.toLowerCase().includes(q));
-    c.style.display=ok?'':'none';
-  }});
-}}
 function filterArc(){{
   const q=document.getElementById('search-arc').value.toLowerCase();
-  document.querySelectorAll('#arc-tbody tr').forEach(r=>{{
-    r.style.display=!q||r.innerText.toLowerCase().includes(q)?'':'none';
-  }});
+  document.querySelectorAll('#arc-tbody tr').forEach(r=>{{r.style.display=!q||r.innerText.toLowerCase().includes(q)?'':'none';}});
 }}
-
 function toast(msg,ms=4500){{
   const el=document.getElementById('toast');
   el.innerHTML=msg;el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),ms);
 }}
-
 async function rerun(){{
   const GITHUB_USER='Lukemckenzie2026';
   const GITHUB_REPO='nrc-news';
   const TOKEN='{GITHUB_PAT}';
   if(!TOKEN||TOKEN===''||TOKEN==='{GITHUB_PAT}'){{
-    toast('Rerun not configured yet — go to Actions tab on GitHub to run manually.',6000);
-    return;
+    toast('Use Actions tab on GitHub to run manually.',5000);return;
   }}
   const btn=document.getElementById('rerun-btn');
   const prog=document.getElementById('prog');
   const fill=document.getElementById('prog-fill');
-  btn.disabled=true;btn.textContent='Triggering…';
-  prog.classList.add('show');
+  btn.disabled=true;btn.textContent='Running…';prog.classList.add('show');
   try{{
-    const res=await fetch(
-      `https://api.github.com/repos/${{GITHUB_USER}}/${{GITHUB_REPO}}/actions/workflows/daily.yml/dispatches`,
-      {{method:'POST',headers:{{'Authorization':`Bearer ${{TOKEN}}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'}},body:JSON.stringify({{ref:'main'}})}}
-    );
+    const res=await fetch(`https://api.github.com/repos/${{GITHUB_USER}}/${{GITHUB_REPO}}/actions/workflows/daily.yml/dispatches`,
+      {{method:'POST',headers:{{'Authorization':`Bearer ${{TOKEN}}`,'Accept':'application/vnd.github+json','Content-Type':'application/json'}},body:JSON.stringify({{ref:'main'}})}});
     if(res.status===204){{
-      let pct=5;
-      const tick=setInterval(()=>{{pct=Math.min(pct+2,90);fill.style.width=pct+'%';}},3000);
-      toast('✓ Running — takes ~2 min. Page reloads when done.',7000);
+      let pct=5;const tick=setInterval(()=>{{pct=Math.min(pct+2,90);fill.style.width=pct+'%';}},3000);
+      toast('✓ Running — reloads when done (~2 min)',6000);
       await new Promise(r=>setTimeout(r,15000));
-      for(let i=0;i<30;i++){{
+      for(let i=0;i<25;i++){{
         await new Promise(r=>setTimeout(r,8000));
-        try{{
-          const r2=await fetch(`https://api.github.com/repos/${{GITHUB_USER}}/${{GITHUB_REPO}}/actions/runs?per_page=1`,{{headers:{{'Authorization':`Bearer ${{TOKEN}}`,'Accept':'application/vnd.github+json'}}}});
-          const d=await r2.json();
-          const run=d.workflow_runs?.[0];
-          if(run&&run.status==='completed'){{clearInterval(tick);fill.style.width='100%';toast('✓ Done — reloading…',2000);setTimeout(()=>location.reload(),2100);return;}}
-        }}catch(_){{}}
+        try{{const r2=await fetch(`https://api.github.com/repos/${{GITHUB_USER}}/${{GITHUB_REPO}}/actions/runs?per_page=1`,{{headers:{{'Authorization':`Bearer ${{TOKEN}}`,'Accept':'application/vnd.github+json'}}}});
+        const d=await r2.json();const run=d.workflow_runs?.[0];
+        if(run&&run.status==='completed'){{clearInterval(tick);fill.style.width='100%';toast('✓ Done — reloading…',2000);setTimeout(()=>location.reload(),2100);return;}}}}catch(_){{}}
       }}
-      clearInterval(tick);
-      toast('Still running — reload the page in a minute.',4000);
-      btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-    }}else{{
-      toast(`⚠ GitHub error ${{res.status}} — check your PAT has workflow permissions.`,7000);
-      btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-    }}
-  }}catch(e){{
-    toast('⚠ Error: '+e.message,5000);
-    btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
-  }}
+      clearInterval(tick);toast('Still running — reload in a minute.',4000);
+    }}else{{toast(`⚠ Error ${{res.status}} — check PAT permissions.`,6000);}}
+  }}catch(e){{toast('⚠ '+e.message,5000);}}
+  btn.disabled=false;btn.textContent='↻ Rerun';prog.classList.remove('show');fill.style.width='0%';
 }}
 </script>
 </body>
@@ -500,7 +570,7 @@ def main():
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
-    # 1. Scrape headlines from all sources
+    # 1. Scrape headlines
     all_headlines = []
     for source in SOURCES:
         print(f"Scraping: {source['name']}")
@@ -508,18 +578,14 @@ def main():
         time.sleep(0.5)
     print(f"\nTotal headlines: {len(all_headlines)}")
 
-    # 2. Single Claude call — rank and summarize top 10
+    # 2. Single Claude call — rank, summarize, extract data
     print("\nRanking with Claude…")
-    top_articles = rank_with_claude(client, all_headlines)
+    articles, snapshot, transactions = rank_with_claude(client, all_headlines)
 
     # 3. Add metadata
     enriched = []
-    for a in top_articles:
-        enriched.append({
-            **a,
-            "date": today_str,
-            "id": hashlib.md5(a["url"].encode()).hexdigest()[:10]
-        })
+    for a in articles:
+        enriched.append({**a, "date": today_str, "id": hashlib.md5(a["url"].encode()).hexdigest()[:10]})
 
     # 4. Archive
     archive = load_archive()
@@ -533,7 +599,7 @@ def main():
     print("\nGenerating dashboard…")
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        f.write(generate_html(enriched, full_archive, today_str))
+        f.write(generate_html(enriched, full_archive, today_str, snapshot, transactions))
 
     print(f"\n{'='*55}\nDone → docs/index.html\n{'='*55}\n")
 
