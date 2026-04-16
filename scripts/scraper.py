@@ -530,8 +530,8 @@ function toast(msg,ms=4500){{
 async function rerun(){{
   const GITHUB_USER='Lukemckenzie2026';
   const GITHUB_REPO='nrc-news';
-  const TOKEN='{GITHUB_PAT}';
-  if(!TOKEN||TOKEN===''||TOKEN==='{GITHUB_PAT}'){{
+  const TOKEN='PASTE_YOUR_PAT_HERE';
+  if(!TOKEN||TOKEN===''||TOKEN==='PASTE_YOUR_PAT_HERE'){{
     toast('Use Actions tab on GitHub to run manually.',5000);return;
   }}
   const btn=document.getElementById('rerun-btn');
