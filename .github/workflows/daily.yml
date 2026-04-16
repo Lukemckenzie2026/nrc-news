@@ -2,7 +2,7 @@ name: NRC Daily Scraper
 
 on:
   schedule:
-    - cron: "0 11 * * 1-5"
+    - cron: "0 * * * 1-5"
   workflow_dispatch:
 
 permissions:
