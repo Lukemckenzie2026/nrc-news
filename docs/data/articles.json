@@ -1,0 +1,93 @@
+{
+  "last_updated": "2026-04-15T12:00:00Z",
+  "sources": [
+    "Bisnow Boston",
+    "CoStar News",
+    "Boston Globe Real Estate",
+    "The Real Deal",
+    "GlobeSt.com",
+    "Commercial Observer"
+  ],
+  "articles": [
+    {
+      "id": "a1b2c3d4e5",
+      "title": "Life Science Demand in Boston's Seaport Rebounds as Biotech Funding Picks Up",
+      "url": "https://www.bisnow.com/boston/news/life-science/life-science-demand-seaport-rebounds",
+      "source": "Bisnow Boston",
+      "paywall": false,
+      "relevance_reason": "Direct relevance to NRC's Boston life science asset class focus; positive demand signal for Seaport submarket.",
+      "date": "2026-04-15",
+      "pdf_filename": "20260415_a1b2c3d4e5.pdf"
+    },
+    {
+      "id": "b2c3d4e5f6",
+      "title": "Industrial Cap Rates Compress Further in Northeast Markets Despite Rate Headwinds",
+      "url": "https://www.globest.com/industrial/cap-rates-compress-northeast",
+      "source": "GlobeSt.com",
+      "paywall": false,
+      "relevance_reason": "Key cap rate trend across NRC's primary industrial markets (Boston, NY, Pittsburgh). Affects underwriting assumptions.",
+      "date": "2026-04-15",
+      "pdf_filename": "20260415_b2c3d4e5f6.pdf"
+    },
+    {
+      "id": "c3d4e5f6g7",
+      "title": "CMBS Delinquency Rate Ticks Up as Office Loan Maturities Hit 2026 Wall",
+      "url": "https://www.costar.com/news/cmbs-delinquency-office-2026",
+      "source": "CoStar News",
+      "paywall": true,
+      "relevance_reason": "Relevant to NRC's Class B office portfolio and broader CMBS credit market monitoring. Watch for distressed acquisition opportunities.",
+      "date": "2026-04-15",
+      "pdf_filename": null
+    },
+    {
+      "id": "d4e5f6g7h8",
+      "title": "Cold Storage Demand Surges as E-Commerce Giants Expand Northeast Distribution",
+      "url": "https://commercialobserver.com/cold-storage-demand-northeast",
+      "source": "Commercial Observer",
+      "paywall": false,
+      "relevance_reason": "Directly relevant to NRC's cold storage asset class. Positive occupancy and rental rate signals for acquisitions pipeline.",
+      "date": "2026-04-15",
+      "pdf_filename": "20260415_d4e5f6g7h8.pdf"
+    },
+    {
+      "id": "e5f6g7h8i9",
+      "title": "Pittsburgh Industrial Vacancy Hits Record Low as Manufacturing Reshoring Accelerates",
+      "url": "https://therealdeal.com/boston/pittsburgh-industrial-vacancy",
+      "source": "The Real Deal",
+      "paywall": false,
+      "relevance_reason": "Strong industrial fundamentals in Pittsburgh, a primary NRC market. Opportunity to evaluate existing holdings and new acquisitions.",
+      "date": "2026-04-15",
+      "pdf_filename": "20260415_e5f6g7h8i9.pdf"
+    },
+    {
+      "id": "f6g7h8i9j0",
+      "title": "Boston Office Market Sees First Net Positive Absorption Since 2022",
+      "url": "https://www.bostonglobe.com/business/real-estate/boston-office-absorption",
+      "source": "Boston Globe Real Estate",
+      "paywall": true,
+      "relevance_reason": "Key indicator for NRC's Class B office portfolio. First positive absorption signal may support asset management strategy.",
+      "date": "2026-04-14",
+      "pdf_filename": null
+    },
+    {
+      "id": "g7h8i9j0k1",
+      "title": "Private Credit Lenders Step Up as Regional Banks Retreat from CRE Construction Loans",
+      "url": "https://www.globest.com/finance/private-credit-cre-construction",
+      "source": "GlobeSt.com",
+      "paywall": false,
+      "relevance_reason": "Capital markets context for NRC deal financing; private credit dynamics affect deal structuring and leverage availability.",
+      "date": "2026-04-14",
+      "pdf_filename": "20260414_g7h8i9j0k1.pdf"
+    },
+    {
+      "id": "h8i9j0k1l2",
+      "title": "Multifamily Rent Growth Moderates in Boston as New Supply Delivers",
+      "url": "https://www.bisnow.com/boston/news/multifamily/rent-growth-moderates",
+      "source": "Bisnow Boston",
+      "paywall": false,
+      "relevance_reason": "Relevant to NRC's tower residential strategy (100+ units). Supply-demand balance affects underwriting for new acquisitions.",
+      "date": "2026-04-13",
+      "pdf_filename": "20260413_h8i9j0k1l2.pdf"
+    }
+  ]
+}
