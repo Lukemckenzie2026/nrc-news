@@ -1,5 +1,29 @@
 [
   {
+    "title": "Fidelity to bring Boston employees back to office five days a week",
+    "url": "https://www.bostonglobe.com/2026/04/29/business/fidelity-return-to-office-five-days-boston/",
+    "source": "The Boston Globe",
+    "summary": "Fidelity's mandate for full-time office return signals strengthening demand for Boston office space and could influence other major employers to follow suit. This is positive for Class B office assets as increased occupancy may drive flight-to-quality upgrades and stabilize vacancy rates in the Boston market.",
+    "sentiment": "bullish",
+    "market": "Boston",
+    "asset_class": "Office",
+    "data_point": null,
+    "date": "2026-04-30",
+    "id": "bc1c096c8c"
+  },
+  {
+    "title": "Erik Rutter and David Weitz's Oak Row Equities Has Proven a Master of Miami",
+    "url": "http://commercialobserver.com/2026/04/erik-rutter-david-weitz-oak-row-equities-development/",
+    "source": "Commercial Observer",
+    "summary": "Miami real estate development case study provides competitive intelligence on market dynamics and development strategies outside NRC's core markets. Understanding successful development approaches in high-growth markets may inform NRC's opportunistic and value-add strategies, though not directly applicable to current geographic focus.",
+    "sentiment": "neutral",
+    "market": "National",
+    "asset_class": "Multifamily",
+    "data_point": null,
+    "date": "2026-04-30",
+    "id": "c23c370d17"
+  },
+  {
     "title": "How Commercial Real Estate Investment Fueled Detroit's Urban Comeback",
     "url": "http://commercialobserver.com/2026/04/commercial-real-estate-investment-dan-gilbert-detroit-comeback/",
     "source": "Commercial Observer",
