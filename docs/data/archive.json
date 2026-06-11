@@ -130,29 +130,5 @@
     "data_point": null,
     "date": "2026-05-13",
     "id": "b144efe715"
-  },
-  {
-    "title": "Brookfield Asset Management Reports $67B in Fresh Capital in 2026 So Far",
-    "url": "http://commercialobserver.com/2026/05/brookfield-asset-management-q1-earnings/",
-    "source": "Commercial Observer",
-    "summary": "Brookfield's massive capital raise of $67B signals strong institutional appetite for real estate investment, indicating improved market liquidity and potential competition for deals. This capital deployment could drive up acquisition prices in NRC's target markets and asset classes.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Capital Markets",
-    "data_point": "$67B",
-    "date": "2026-05-11",
-    "id": "e25cfbd614"
-  },
-  {
-    "title": "Multifamily Investors Should Consider Hospitality Too",
-    "url": "http://commercialobserver.com/2026/05/multifamily-investors-hospitality/",
-    "source": "Commercial Observer",
-    "summary": "The article suggests diversification opportunities for multifamily investors into hospitality assets. This could signal evolving strategies in residential-focused investment, though hospitality falls outside NRC's current tower residential focus.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Multifamily",
-    "data_point": null,
-    "date": "2026-05-11",
-    "id": "35216831ce"
   }
 ]
