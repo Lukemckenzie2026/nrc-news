@@ -1,5 +1,17 @@
 [
   {
+    "title": "Foreclosure Spike Unlocks Discounted Housing Deals For CRE",
+    "url": "https://www.credaily.com/briefs/foreclosure-spike-unlocks-discounted-housing-deals-for-cre/",
+    "source": "Credaily.com",
+    "summary": "Rising foreclosures are creating opportunities to acquire distressed residential assets at discounted prices. This aligns with NRC's opportunistic and value-add strategy for tower residential investments.",
+    "sentiment": "bullish",
+    "market": "National",
+    "asset_class": "Multifamily",
+    "data_point": null,
+    "date": "2026-07-13",
+    "id": "ee419b8716"
+  },
+  {
     "title": "Rockpoint and Urby Form JV to Develop Luxury Resi Tower on the Jersey City Waterfront",
     "url": "http://commercialobserver.com/2026/07/rockpoint-urby-jersey-city/",
     "source": "Commercial Observer",
@@ -34,41 +46,5 @@
     "data_point": "$44M",
     "date": "2026-06-17",
     "id": "e261e4640d"
-  },
-  {
-    "title": "Industrial Real Estate Has Entered Its Fixer-Upper Phase",
-    "url": "http://commercialobserver.com/2026/06/industrial-real-estate-value-add-investors/",
-    "source": "Commercial Observer",
-    "summary": "Industrial real estate market is shifting toward value-add opportunities as properties require repositioning and improvements. This aligns directly with NRC's value-add strategy and industrial asset class focus, presenting acquisition opportunities.",
-    "sentiment": "bullish",
-    "market": "National",
-    "asset_class": "Industrial",
-    "data_point": null,
-    "date": "2026-06-11",
-    "id": "fb2737a5b7"
-  },
-  {
-    "title": "Mom-and-Pop Industrial Outdoor Storage Firms Cash In",
-    "url": "http://commercialobserver.com/2026/06/industrial-outdoor-storage-institutional-investors-2026/",
-    "source": "Commercial Observer",
-    "summary": "Institutional investors are acquiring mom-and-pop industrial outdoor storage operations, indicating strong capital flows into industrial-adjacent assets. This trend suggests opportunities for NRC to evaluate IOS acquisitions or partnerships within their industrial focus markets.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Industrial",
-    "data_point": null,
-    "date": "2026-06-10",
-    "id": "264bae7e49"
-  },
-  {
-    "title": "In Life Sciences Real Estate, Times Are Tough. That Spells Opportunity for Some.",
-    "url": "http://commercialobserver.com/2026/06/life-sciences-real-estate-conversions/",
-    "source": "Commercial Observer",
-    "summary": "The life sciences sector is experiencing distress, creating potential acquisition opportunities for value-add and opportunistic investors. This market dislocation aligns with NRC's strategy to pursue distressed assets in one of its core asset classes.",
-    "sentiment": "bullish",
-    "market": "National",
-    "asset_class": "Life Science",
-    "data_point": null,
-    "date": "2026-06-10",
-    "id": "8a789e8c6f"
   }
 ]
