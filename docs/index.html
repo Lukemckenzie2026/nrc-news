@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NRC Market Intelligence — July 17, 2026</title>
+<title>NRC Market Intelligence — July 20, 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -132,7 +132,7 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
     <div class="th-nrc">NRC</div>
     <div>
       <div class="th-title">Market Intelligence Dashboard</div>
-      <div class="th-date">July 17, 2026</div>
+      <div class="th-date">July 20, 2026</div>
     </div>
   </div>
   <div class="th-markets">
@@ -155,10 +155,10 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
     <!-- STAT CARDS -->
     <div class="stat-row">
       
-      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">0</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
-      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">0</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
+      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">1</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
+      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">1</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
       <div class="stat-card"><div class="stat-label">Bearish Signals</div><div class="stat-value" style="color:var(--redl)">0</div><div class="stat-note" style="color:var(--redl)">↓ Watch closely</div></div>
-      <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">9</div><div class="stat-note" style="color:var(--g4)">All time</div></div>
+      <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">8</div><div class="stat-note" style="color:var(--g4)">All time</div></div>
     </div>
 
     <div class="two-col">
@@ -167,7 +167,18 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
       <div>
         <div class="sec-header">Top Headlines — All Markets</div>
         <div class="hl-panel">
-          <div class="empty">No articles yet — run the scraper.</div>
+          <a class="hl-row" href="https://www.credaily.com/briefs/san-francisco-office-comeback-driven-by-ai-leasing-surge/" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#5a3a1a">California</span>
+    <div class="hl-text">
+      <div class="hl-title">San Francisco Office Comeback Driven by AI Leasing Surge</div>
+      <div class="hl-sub">Office · Credaily.com</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a>
         </div>
 
         <!-- TRANSACTIONS -->
@@ -178,12 +189,18 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
       <div class="right-col">
         <div class="signal-panel">
           <div class="sec-header">Market Signals</div>
-          
+          <div class="signal-card">
+  <div class="signal-icon" style="background:#1e6e4a">↑</div>
+  <div class="signal-body">
+    <div class="signal-summary">AI companies are driving renewed office leasing activity in San Francisco, potentially signaling a shift in Class B office fundamentals in major tech markets. This could create opportunities for NRC's California office holdings if the tech-driven demand spreads or creates spillover effects in other markets.</div>
+    <div class="signal-source">Credaily.com</div>
+  </div>
+</div>
         </div>
 
         <div class="vacancy-panel">
           <div class="sec-header">Vacancy Watch — Boston Sub-Markets</div>
-          <div class="vac-row"><span class="vac-label">Industrial (Greater Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:25%;background:var(--greenl)"></div></div><span class="vac-val">—</span></div>
+          <div class="vac-row"><span class="vac-label">Industrial (Greater Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:25%;background:var(--greenl)"></div></div><span class="vac-val">~5%</span></div>
           <div class="vac-row"><span class="vac-label">Office (Metro Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:85%;background:var(--redl)"></div></div><span class="vac-val">~18%</span></div>
           <div class="vac-row"><span class="vac-label">Lab / Life Science</span><div class="vac-bar"><div class="vac-fill" style="width:55%;background:#b8924a)"></div></div><span class="vac-val">Recovering</span></div>
           <div class="vac-row"><span class="vac-label">Multifamily (Metro)</span><div class="vac-bar"><div class="vac-fill" style="width:20%;background:var(--greenl)"></div></div><span class="vac-val">Tight</span></div>
@@ -196,13 +213,19 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
   <!-- ARCHIVE TAB -->
   <div class="tab-pane" id="tab-archive">
     <div class="frow">
-      <span style="font-size:11px;color:var(--g4);font-family:'DM Mono',monospace">9 ARTICLES IN ARCHIVE</span>
+      <span style="font-size:11px;color:var(--g4);font-family:'DM Mono',monospace">8 ARTICLES IN ARCHIVE</span>
       <input class="fsearch" placeholder="Search archive…" id="search-arc" oninput="filterArc()">
     </div>
     <div class="arc-wrap">
       <table class="arc-table">
         <thead><tr><th>Date</th><th>Market</th><th>Headline</th><th>Summary</th><th>Sentiment</th></tr></thead>
         <tbody id="arc-tbody"><tr>
+  <td class="td-date">2026-07-20</td>
+  <td><span class="mbadge" style="background:#5a3a1a">California</span></td>
+  <td><a href="https://www.credaily.com/briefs/san-francisco-office-comeback-driven-by-ai-leasing-surge/" target="_blank" class="arc-link">San Francisco Office Comeback Driven by AI Leasing Surge</a></td>
+  <td class="td-sum">AI companies are driving renewed office leasing activity in San Francisco, potentially signaling a shift in Class B office fundamentals in major tech markets. This could create opportunities for NRC's California office holdings if the tech-driven demand spreads or creates spillover effects in other markets.</td>
+  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
+</tr><tr>
   <td class="td-date">2026-07-15</td>
   <td><span class="mbadge" style="background:#4a4a4a">National</span></td>
   <td><a href="http://commercialobserver.com/2026/07/ben-brown-brookfield-real-estate-office-hospitality-logistics/" target="_blank" class="arc-link">Ben Brown, Brookfield's Real Estate Chief, On REITs, Housing, Office and Hospitality</a></td>
@@ -244,18 +267,6 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
   <td><a href="http://commercialobserver.com/2026/07/rockpoint-urby-jersey-city/" target="_blank" class="arc-link">Rockpoint and Urby Form JV to Develop Luxury Resi Tower on the Jersey City Waterfront</a></td>
   <td class="td-sum">Boston-based Rockpoint Group is forming a joint venture with Urby to develop a luxury residential tower in Jersey City, signaling active multifamily development appetite in the New York metro area. This demonstrates that institutional capital is pursuing ground-up residential development in high-barrier coastal markets despite current interest rate environment.</td>
   <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
-</tr><tr>
-  <td class="td-date">2026-06-17</td>
-  <td><span class="mbadge" style="background:#1a3a5c">Boston</span></td>
-  <td><a href="http://commercialobserver.com/2026/06/beacon-bank-suburban-boston-apartments/" target="_blank" class="arc-link">Beacon Bank Lends $45M for Boston-Area Apartments Project</a></td>
-  <td class="td-sum">Regional bank providing $45M construction/permanent financing for multifamily development in suburban Boston signals continued debt availability for residential projects in NRC's core market. This demonstrates active lending appetite for tower residential assets in the Boston metro area, supporting NRC's acquisition and development pipeline.</td>
-  <td><span class="sent-pill" style="color:#1e6e4a;background:#eef7f2">BULLISH</span></td>
-</tr><tr>
-  <td class="td-date">2026-06-17</td>
-  <td><span class="mbadge" style="background:#2d4a7a">New York</span></td>
-  <td><a href="http://commercialobserver.com/2026/06/catal-group-montauk-hamptons-hotel/" target="_blank" class="arc-link">Catal Group Refis Montauk Hotel With $44M Loan</a></td>
-  <td class="td-sum">Successful $44M hotel refinancing in high-end New York market indicates lenders remain willing to provide debt for hospitality assets. While hotels are outside NRC's asset class focus, this refinancing activity suggests improving credit market conditions that could benefit NRC's financing needs across its portfolio.</td>
-  <td><span class="sent-pill" style="color:#2660a4;background:#eef3fb">NEUTRAL</span></td>
 </tr></tbody>
       </table>
     </div>

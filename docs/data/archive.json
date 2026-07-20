@@ -1,5 +1,17 @@
 [
   {
+    "title": "San Francisco Office Comeback Driven by AI Leasing Surge",
+    "url": "https://www.credaily.com/briefs/san-francisco-office-comeback-driven-by-ai-leasing-surge/",
+    "source": "Credaily.com",
+    "summary": "AI companies are driving renewed office leasing activity in San Francisco, potentially signaling a shift in Class B office fundamentals in major tech markets. This could create opportunities for NRC's California office holdings if the tech-driven demand spreads or creates spillover effects in other markets.",
+    "sentiment": "bullish",
+    "market": "California",
+    "asset_class": "Office",
+    "data_point": null,
+    "date": "2026-07-20",
+    "id": "dc2950abd7"
+  },
+  {
     "title": "Ben Brown, Brookfield's Real Estate Chief, On REITs, Housing, Office and Hospitality",
     "url": "http://commercialobserver.com/2026/07/ben-brown-brookfield-real-estate-office-hospitality-logistics/",
     "source": "Commercial Observer",
@@ -82,29 +94,5 @@
     "data_point": null,
     "date": "2026-07-09",
     "id": "45f7d6eaf3"
-  },
-  {
-    "title": "Beacon Bank Lends $45M for Boston-Area Apartments Project",
-    "url": "http://commercialobserver.com/2026/06/beacon-bank-suburban-boston-apartments/",
-    "source": "Commercial Observer",
-    "summary": "Regional bank providing $45M construction/permanent financing for multifamily development in suburban Boston signals continued debt availability for residential projects in NRC's core market. This demonstrates active lending appetite for tower residential assets in the Boston metro area, supporting NRC's acquisition and development pipeline.",
-    "sentiment": "bullish",
-    "market": "Boston",
-    "asset_class": "Multifamily",
-    "data_point": "$45M",
-    "date": "2026-06-17",
-    "id": "6b2bfac99e"
-  },
-  {
-    "title": "Catal Group Refis Montauk Hotel With $44M Loan",
-    "url": "http://commercialobserver.com/2026/06/catal-group-montauk-hamptons-hotel/",
-    "source": "Commercial Observer",
-    "summary": "Successful $44M hotel refinancing in high-end New York market indicates lenders remain willing to provide debt for hospitality assets. While hotels are outside NRC's asset class focus, this refinancing activity suggests improving credit market conditions that could benefit NRC's financing needs across its portfolio.",
-    "sentiment": "neutral",
-    "market": "New York",
-    "asset_class": "Capital Markets",
-    "data_point": "$44M",
-    "date": "2026-06-17",
-    "id": "e261e4640d"
   }
 ]
