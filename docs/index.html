@@ -155,10 +155,10 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
     <!-- STAT CARDS -->
     <div class="stat-row">
       
-      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">0</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
+      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">1</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
       <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">0</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
       <div class="stat-card"><div class="stat-label">Bearish Signals</div><div class="stat-value" style="color:var(--redl)">0</div><div class="stat-note" style="color:var(--redl)">↓ Watch closely</div></div>
-      <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">19</div><div class="stat-note" style="color:var(--g4)">All time</div></div>
+      <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">20</div><div class="stat-note" style="color:var(--g4)">All time</div></div>
     </div>
 
     <div class="two-col">
@@ -167,7 +167,18 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
       <div>
         <div class="sec-header">Top Headlines — All Markets</div>
         <div class="hl-panel">
-          <div class="empty">No articles yet — run the scraper.</div>
+          <a class="hl-row" href="http://commercialobserver.com/2026/08/ai-real-estate-tech-brookfield-blackstone-proptech/" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#4a4a4a">National</span>
+    <div class="hl-text">
+      <div class="hl-title">The Likes of Blackstone and Brookfield Are Using AI to Build Real Estate Tech In-House</div>
+      <div class="hl-sub">Capital Markets · Commercial Observer</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#2660a4" title="neutral"></span>
+  </div>
+</a>
         </div>
 
         <!-- TRANSACTIONS -->
@@ -178,7 +189,13 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
       <div class="right-col">
         <div class="signal-panel">
           <div class="sec-header">Market Signals</div>
-          
+          <div class="signal-card">
+  <div class="signal-icon" style="background:#2660a4">i</div>
+  <div class="signal-body">
+    <div class="signal-summary">Major PE firms like Blackstone and Brookfield are developing proprietary AI technology for real estate operations instead of relying on third-party vendors. This trend suggests NRC should evaluate whether to invest in custom AI tools for asset management, underwriting, and portfolio optimization to remain competitive with larger institutional players.</div>
+    <div class="signal-source">Commercial Observer</div>
+  </div>
+</div>
         </div>
 
         <div class="vacancy-panel">
@@ -196,13 +213,19 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
   <!-- ARCHIVE TAB -->
   <div class="tab-pane" id="tab-archive">
     <div class="frow">
-      <span style="font-size:11px;color:var(--g4);font-family:'DM Mono',monospace">19 ARTICLES IN ARCHIVE</span>
+      <span style="font-size:11px;color:var(--g4);font-family:'DM Mono',monospace">20 ARTICLES IN ARCHIVE</span>
       <input class="fsearch" placeholder="Search archive…" id="search-arc" oninput="filterArc()">
     </div>
     <div class="arc-wrap">
       <table class="arc-table">
         <thead><tr><th>Date</th><th>Market</th><th>Headline</th><th>Summary</th><th>Sentiment</th></tr></thead>
         <tbody id="arc-tbody"><tr>
+  <td class="td-date">2026-08-04</td>
+  <td><span class="mbadge" style="background:#4a4a4a">National</span></td>
+  <td><a href="http://commercialobserver.com/2026/08/ai-real-estate-tech-brookfield-blackstone-proptech/" target="_blank" class="arc-link">The Likes of Blackstone and Brookfield Are Using AI to Build Real Estate Tech In-House</a></td>
+  <td class="td-sum">Major PE firms like Blackstone and Brookfield are developing proprietary AI technology for real estate operations instead of relying on third-party vendors. This trend suggests NRC should evaluate whether to invest in custom AI tools for asset management, underwriting, and portfolio optimization to remain competitive with larger institutional players.</td>
+  <td><span class="sent-pill" style="color:#2660a4;background:#eef3fb">NEUTRAL</span></td>
+</tr><tr>
   <td class="td-date">2026-07-30</td>
   <td><span class="mbadge" style="background:#4a4a4a">National</span></td>
   <td><a href="http://commercialobserver.com/2026/07/fed-interest-rates-kevin-warsh/" target="_blank" class="arc-link">Fed Holds Interest Rates in Warsh's Second Meeting as FOMC Chair</a></td>
