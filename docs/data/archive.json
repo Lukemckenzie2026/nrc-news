@@ -1,5 +1,17 @@
 [
   {
+    "title": "Vornado, Related\u2019s Chelsea Office Hits Special Servicing",
+    "url": "https://www.credaily.com/briefs/vornado-related-s-chelsea-office-hits-special-servicing/",
+    "source": "Credaily.com",
+    "summary": "A Chelsea office property owned by Vornado and Related has been transferred to special servicing, signaling loan distress. This indicates continued stress in the New York office market, potentially creating distressed acquisition opportunities for NRC.",
+    "sentiment": "neutral",
+    "market": "New York",
+    "asset_class": "Office",
+    "data_point": null,
+    "date": "2026-08-17",
+    "id": "580bc07e68"
+  },
+  {
     "title": "Equity Residential and AvalonBay: Inside the $71B Mega Multifamily Merger",
     "url": "http://commercialobserver.com/2026/08/equity-residential-avalonbay-communities-inside-71b-mega-multifamily-merger/",
     "source": "Commercial Observer",
@@ -166,53 +178,5 @@
     "data_point": null,
     "date": "2026-07-20",
     "id": "dc2950abd7"
-  },
-  {
-    "title": "Ben Brown, Brookfield's Real Estate Chief, On REITs, Housing, Office and Hospitality",
-    "url": "http://commercialobserver.com/2026/07/ben-brown-brookfield-real-estate-office-hospitality-logistics/",
-    "source": "Commercial Observer",
-    "summary": "Brookfield's real estate leadership provides insights on current market conditions across office, housing, and logistics sectors. This perspective from a major institutional player can inform NRC's acquisition and asset management strategies across multiple asset classes.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Capital Markets",
-    "data_point": null,
-    "date": "2026-07-15",
-    "id": "033cac2ee4"
-  },
-  {
-    "title": "South Florida's top deals: Estate tied to late prince parts with Palm Beach property for $32M",
-    "url": "https://therealdeal.com/miami/2026/07/14/south-florida-top-real-estate-deals-july-13-2026/",
-    "source": "The Real Deal",
-    "summary": "High-end residential transaction in Florida at $32M reflects luxury market activity outside NRC's core markets and asset classes. Limited direct relevance to NRC's strategy focused on income-producing commercial and multifamily assets.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Multifamily",
-    "data_point": "$32M",
-    "date": "2026-07-15",
-    "id": "fbc6288e75"
-  },
-  {
-    "title": "Dallas-Fort Worth Sustains Office Strength Amid National Slump",
-    "url": "https://www.credaily.com/briefs/dallas-fort-worth-sustains-office-strength-amid-national-slump/",
-    "source": "Credaily.com",
-    "summary": "While not in NRC's primary markets, this demonstrates continued bifurcation in office performance nationally, reinforcing the importance of market selection. This trend may create opportunities for value-add Class B office investments in NRC's target markets as pricing adjusts to reflect local fundamentals rather than national sentiment.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Office",
-    "data_point": null,
-    "date": "2026-07-15",
-    "id": "639d5833b3"
-  },
-  {
-    "title": "After years of buyer pursuit, family sells Medley industrial portfolio for $39M",
-    "url": "https://therealdeal.com/miami/2026/07/13/longpoint-partners-buys-39m-medley-industrial-portfolio/",
-    "source": "The Real Deal",
-    "summary": "Industrial portfolio transaction demonstrates continued buyer appetite and liquidity for industrial assets. While outside NRC's geographic focus, the $39M sale price provides a comparable data point for similar portfolio acquisitions in NRC's target markets.",
-    "sentiment": "bullish",
-    "market": "National",
-    "asset_class": "Industrial",
-    "data_point": "$39M",
-    "date": "2026-07-15",
-    "id": "7efc6c156d"
   }
 ]
