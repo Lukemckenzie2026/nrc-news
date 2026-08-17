@@ -155,8 +155,8 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
     <!-- STAT CARDS -->
     <div class="stat-row">
       
-      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">0</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
-      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">0</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
+      <div class="stat-card"><div class="stat-label">Articles Today</div><div class="stat-value">1</div><div class="stat-note" style="color:var(--g4)">Ranked by relevance</div></div>
+      <div class="stat-card"><div class="stat-label">Bullish Signals</div><div class="stat-value" style="color:var(--greenl)">1</div><div class="stat-note" style="color:var(--greenl)">↑ Positive outlook</div></div>
       <div class="stat-card"><div class="stat-label">Bearish Signals</div><div class="stat-value" style="color:var(--redl)">0</div><div class="stat-note" style="color:var(--redl)">↓ Watch closely</div></div>
       <div class="stat-card"><div class="stat-label">Archive Total</div><div class="stat-value">15</div><div class="stat-note" style="color:var(--g4)">All time</div></div>
     </div>
@@ -167,23 +167,47 @@ body{font-family:var(--font);background:var(--off);color:var(--navy);font-size:1
       <div>
         <div class="sec-header">Top Headlines — All Markets</div>
         <div class="hl-panel">
-          <div class="empty">No articles yet — run the scraper.</div>
+          <a class="hl-row" href="https://www.credaily.com/briefs/vornado-related-s-chelsea-office-hits-special-servicing/" target="_blank">
+  <div class="hl-left">
+    <span class="mbadge" style="background:#2d4a7a">New York</span>
+    <div class="hl-text">
+      <div class="hl-title">Vornado, Related's Chelsea Office Hits Special Servicing</div>
+      <div class="hl-sub">Office · Credaily.com</div>
+    </div>
+  </div>
+  <div class="hl-right">
+    <span class="sent-dot" style="background:#1e6e4a" title="bullish"></span>
+  </div>
+</a>
         </div>
 
         <!-- TRANSACTIONS -->
-        
+        <div class="tx-panel" style="margin-top:20px;">
+          <div class="sec-header">Notable Transactions — Recent Closes &amp; Filings</div>
+          <div class="tx-grid"><div class="tx-cell">
+  <div class="tx-addr">Chelsea Office (Vornado/Related)</div>
+  <div class="tx-detail">Loan transferred to special servicing</div>
+  <div class="tx-who">Financing</div>
+</div></div>
+        </div>
       </div>
 
       <!-- RIGHT: SIGNALS + VACANCY -->
       <div class="right-col">
         <div class="signal-panel">
           <div class="sec-header">Market Signals</div>
-          
+          <div class="signal-card">
+  <div class="signal-icon" style="background:#1e6e4a">↑</div>
+  <div class="signal-body">
+    <div class="signal-summary">A Chelsea office property owned by major institutional sponsors Vornado and Related has been transferred to special servicing, indicating loan distress. This signals continued stress in the New York office market and potential future distressed acquisition opportunities for NRC.</div>
+    <div class="signal-source">Credaily.com</div>
+  </div>
+</div>
         </div>
 
         <div class="vacancy-panel">
           <div class="sec-header">Vacancy Watch — Boston Sub-Markets</div>
-          <div class="vac-row"><span class="vac-label">Industrial (Greater Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:25%;background:var(--greenl)"></div></div><span class="vac-val">—</span></div>
+          <div class="vac-row"><span class="vac-label">Industrial (Greater Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:25%;background:var(--greenl)"></div></div><span class="vac-val">~5%</span></div>
           <div class="vac-row"><span class="vac-label">Office (Metro Boston)</span><div class="vac-bar"><div class="vac-fill" style="width:85%;background:var(--redl)"></div></div><span class="vac-val">~18%</span></div>
           <div class="vac-row"><span class="vac-label">Lab / Life Science</span><div class="vac-bar"><div class="vac-fill" style="width:55%;background:#b8924a)"></div></div><span class="vac-val">Recovering</span></div>
           <div class="vac-row"><span class="vac-label">Multifamily (Metro)</span><div class="vac-bar"><div class="vac-fill" style="width:20%;background:var(--greenl)"></div></div><span class="vac-val">Tight</span></div>
