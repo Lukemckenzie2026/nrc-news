@@ -1,5 +1,53 @@
 [
   {
+    "title": "Gillette Buys South Boston Life Science Site for $99.29M",
+    "url": "https://www.credaily.com/briefs/gillette-buys-south-boston-life-science-site-for-99-29m/",
+    "source": "Credaily.com",
+    "summary": "Major life science transaction in South Boston signals continued institutional demand for lab space in NRC's core Boston market. This validates pricing strength for life science assets and could indicate favorable exit opportunities for NRC's Boston life science portfolio.",
+    "sentiment": "bullish",
+    "market": "Boston",
+    "asset_class": "Life Science",
+    "data_point": "$99.29M",
+    "date": "2026-08-24",
+    "id": "6d22201e1f"
+  },
+  {
+    "title": "The CMBS Maturity Wall Hides a Sharp Refinancing Reset",
+    "url": "https://www.credaily.com/briefs/the-cmbs-maturity-wall-hides-a-sharp-refinancing-reset/",
+    "source": "Credaily.com",
+    "summary": "Upcoming CMBS maturities facing refinancing challenges could create distressed acquisition opportunities for NRC. Higher refinancing costs may force sellers into distressed sales, particularly beneficial for NRC's opportunistic and value-add strategies.",
+    "sentiment": "bullish",
+    "market": "National",
+    "asset_class": "Capital Markets",
+    "data_point": null,
+    "date": "2026-08-24",
+    "id": "29f4090548"
+  },
+  {
+    "title": "Now Is the Time to Buy in Commercial Real Estate: Morgan Stanley",
+    "url": "http://commercialobserver.com/2026/08/morgan-stanley-real-estate-investment-strategy-2026/",
+    "source": "Commercial Observer",
+    "summary": "Morgan Stanley's endorsement of current CRE buying conditions validates NRC's acquisition strategy timing across all asset classes. This institutional support could improve capital raising prospects and confirms favorable entry points for value-add and opportunistic deals.",
+    "sentiment": "bullish",
+    "market": "National",
+    "asset_class": "Capital Markets",
+    "data_point": null,
+    "date": "2026-08-24",
+    "id": "23ccc617ee"
+  },
+  {
+    "title": "US Office Vacancy Drops, Medical Office Defies Weakness",
+    "url": "https://www.credaily.com/briefs/us-office-vacancy-drops-medical-office-defies-weakness/",
+    "source": "Credaily.com",
+    "summary": "Declining office vacancy rates suggest stabilization in the office market, which could benefit NRC's Class B office holdings and support underwriting assumptions. Medical office resilience indicates potential adjacent opportunities that align with NRC's life science expertise.",
+    "sentiment": "bullish",
+    "market": "National",
+    "asset_class": "Office",
+    "data_point": null,
+    "date": "2026-08-24",
+    "id": "666bc8bf37"
+  },
+  {
     "title": "REITs Report Strong Q2 Results Even as Interest Rates Weigh on Investor Sentiment",
     "url": "http://commercialobserver.com/2026/08/reits-q2-hoya-capital-investors-report/",
     "source": "Commercial Observer",
@@ -106,53 +154,5 @@
     "data_point": null,
     "date": "2026-07-27",
     "id": "02e01cc9b8"
-  },
-  {
-    "title": "Blackstone Reports Record AUM, Strong Earnings Powered by Data Centers, AI",
-    "url": "http://commercialobserver.com/2026/07/blackstone-reports-second-quarter-earnings-data-centers-ai/",
-    "source": "Commercial Observer",
-    "summary": "Blackstone's strong performance driven by data centers and AI infrastructure indicates robust institutional capital flows into specialized industrial-adjacent assets. This trend may increase competition for industrial acquisitions but validates demand for tech-oriented properties in NRC markets.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Industrial",
-    "data_point": null,
-    "date": "2026-07-24",
-    "id": "475839ef32"
-  },
-  {
-    "title": "CRE Fundraising Reflects Distress Cycle That Never Arrived: Report",
-    "url": "http://commercialobserver.com/2026/07/commercial-real-estate-fundraising-distress-cycle-avison-young/",
-    "source": "Commercial Observer",
-    "summary": "The absence of widespread distress reduces opportunistic buying opportunities that NRC typically targets for value-add plays. However, this market stability supports core/core-plus strategies and validates current portfolio valuations.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Capital Markets",
-    "data_point": null,
-    "date": "2026-07-22",
-    "id": "a94cf181d5"
-  },
-  {
-    "title": "CRE Fundraising Reflects Distress Cycle That Never Arrived: Report",
-    "url": "http://commercialobserver.com/2026/07/commercial-real-estate-fundraising-distress-avison-young/",
-    "source": "Commercial Observer",
-    "summary": "The absence of the anticipated distress cycle means fewer discounted acquisition opportunities than expected, potentially requiring NRC to compete more aggressively on core-plus deals. However, this stability also reduces downside risk for NRC's existing portfolio and suggests stronger fundamentals for asset management value creation.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Capital Markets",
-    "data_point": null,
-    "date": "2026-07-22",
-    "id": "a23ebfdb38"
-  },
-  {
-    "title": "Marx Realty CEO Craig Deitelzweig Spied the Office-Hospitality Connection Early",
-    "url": "http://commercialobserver.com/2026/07/marx-realty-ceo-craig-deitelzweig-office-hospitality/",
-    "source": "Commercial Observer",
-    "summary": "The office-hospitality hybrid model represents evolving tenant demands that could inform NRC's Class B office repositioning strategies. Understanding amenity-driven office concepts may enhance value-add execution in Boston and New York markets.",
-    "sentiment": "neutral",
-    "market": "National",
-    "asset_class": "Office",
-    "data_point": null,
-    "date": "2026-07-22",
-    "id": "8975e52bbc"
   }
 ]
